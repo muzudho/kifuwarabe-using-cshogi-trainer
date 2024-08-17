@@ -198,7 +198,10 @@ class Kifuwarabe():
         nearest_distance = 8 + 8 + 1
         nearest_move_u = None
 
-        for move in list(self._board.legal_moves):
+        move_list = list(self._board.legal_moves)
+        random.shuffle(move_list)
+
+        for move in move_list:
             # USI符号
             move_u = cshogi.move_to_usi(move)
             # 移動先
