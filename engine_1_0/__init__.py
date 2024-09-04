@@ -1,20 +1,19 @@
 import cshogi
 import datetime
 import random
+from py_kifuwarabe_trainer import DefaultUsiEngine
 
 
 _engine_file_path = "engine_1_0/engine_name.txt"
 
 
-class UsiEngine():
+class UsiEngine(DefaultUsiEngine):
     """USI エンジン"""
 
 
     def __init__(self):
         """初期化"""
-
-        # 盤
-        self._board = cshogi.Board()
+        pass
 
 
     def usi_loop(self):
