@@ -45,7 +45,7 @@ VSCode であれば、 `*.py` ファイルを開き、画面の右下の Python 
 
 ## 将棋所にエンジン登録する方法
 
-👇 以下のようなフォルダー構成で、１つの将棋エンジンになっている  
+👇 以下のようなサブ・フォルダーが、１つの将棋エンジンのフォルダー構成になっている  
 
 ```plaintext
 📁 engine_1_0
@@ -61,5 +61,6 @@ VSCode であれば、 `*.py` ファイルを開き、画面の右下の Python 
 ```shell
 set PATH=%%PATH%%;C:\Users\muzud\anaconda3
 
-python main.py
+# 数字は、エンジンのレベル
+python main.py 1.0
 ```

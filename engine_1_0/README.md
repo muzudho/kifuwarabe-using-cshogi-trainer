@@ -5,8 +5,8 @@
 
 ## 実行
 
-```shell
-cd engine_1_0
+📁 `kifuwarabe-using-cshogi-trainer` をカレント・ディレクトリーとしてください  
 
-python main.py
+```shell
+python main.py 1.0
 ```

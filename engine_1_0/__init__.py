@@ -3,8 +3,11 @@ import datetime
 import random
 
 
-class Kifuwarabe():
-    """きふわらべ"""
+_engine_file_path = "engine_1_0/engine_name.txt"
+
+
+class UsiEngine():
+    """USI エンジン"""
 
 
     def __init__(self):
@@ -73,12 +76,11 @@ class Kifuwarabe():
 
         # エンジン名は別ファイルから読込。pythonファイルはよく差し替えるのでデータは外に出したい
         try:
-            file_name = "engine_name.txt"
-            with open(file_name, 'r', encoding="utf-8") as f:
+            with open(_engine_file_path, 'r', encoding="utf-8") as f:
                 engine_name = f.read().strip()
 
         except FileNotFoundError as ex:
-            print(f"[usi protocol > usi] '{file_name}' file not found.  ex:{ex}")
+            print(f"[usi protocol > usi] '{_engine_file_path}' file not found.  ex:{ex}")
             raise
 
         print(f'id name {engine_name}')
@@ -257,15 +259,3 @@ class Kifuwarabe():
             code: undo
         """
         self._board.pop()
-
-
-if __name__ == '__main__':
-    """コマンドから実行時"""
-    try:
-        kifuwarabe = Kifuwarabe()
-        kifuwarabe.usi_loop()
-
-    except Exception as err:
-        print(f"[unexpected error] {err=}, {type(err)=}")
-        raise
-
