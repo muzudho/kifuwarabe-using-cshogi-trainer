@@ -50,13 +50,12 @@ VSCode であれば、 `*.py` ファイルを開き、画面の右下の Python 
 ```plaintext
 📁 engine_1_0
 　├── 📄 engine_name.txt
-　├── 📄 main.bat
 　├── 📄 main.py
 　└── 📄 README.md
 ```
 
 
-例えば、 📄 `main.bat` に以下のように書く。これをエンジン登録する
+例えば、 📄 `engine_1_0.bat` に以下のように書く。これをエンジン登録する
 
 ```shell
 set PATH=%%PATH%%;C:\Users\muzud\anaconda3
