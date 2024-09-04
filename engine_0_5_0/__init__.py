@@ -1,7 +1,7 @@
 import cshogi
 import datetime
 import random
-from py_kifuwarabe_trainer import UsiEngine, Squares, BoardHelper
+from py_kifuwarabe_trainer import UsiEngine, Squares, BoardHelper, UsiHelper
 
 
 _engine_file_path = "engine_0_5_0/engine_name.txt"
@@ -55,27 +55,6 @@ class UsiEngine_0_5_0(UsiEngine):
         opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
 
 
-        def a_to_i(alphabet):
-            if alphabet == 'a':
-                return 1
-            if alphabet == 'b':
-                return 2
-            if alphabet == 'c':
-                return 3
-            if alphabet == 'd':
-                return 4
-            if alphabet == 'e':
-                return 5
-            if alphabet == 'f':
-                return 6
-            if alphabet == 'g':
-                return 7
-            if alphabet == 'h':
-                return 8
-            if alphabet == 'i':
-                return 9
-            raise Error(f'rank alphabet: {alphabet}')
-
         # 相手玉と、進んだ駒の距離が最小の手を指す。
         #
         #   盤は１辺９マスなので、１番離れているとき８マス。それが２辺で１６マス。
@@ -91,10 +70,9 @@ class UsiEngine_0_5_0(UsiEngine):
             # USI符号
             move_u = cshogi.move_to_usi(move)
             # 移動先
-            dst_file_th = int(move_u[2: 3])
-            dst_rank_th = a_to_i(move_u[3: 4])
+            dst_sq = UsiHelper.code_to_sq(move_u[2: 4])
             # 敵玉とのマンハッタン距離
-            d = BoardHelper.get_manhattan_distance(opponent_k_sq, dst_file_th, dst_rank_th)
+            d = BoardHelper.get_manhattan_distance(opponent_k_sq, dst_sq)
 
             if d < nearest_distance:
                 nearest_distance = d

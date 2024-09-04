@@ -171,9 +171,38 @@ class UsiEngine():
 class Squares():
     """マス番号ヘルパー"""
 
+
+    @staticmethod
+    def a_to_i(alphabet):
+        if alphabet == 'a':
+            return 1
+        if alphabet == 'b':
+            return 2
+        if alphabet == 'c':
+            return 3
+        if alphabet == 'd':
+            return 4
+        if alphabet == 'e':
+            return 5
+        if alphabet == 'f':
+            return 6
+        if alphabet == 'g':
+            return 7
+        if alphabet == 'h':
+            return 8
+        if alphabet == 'i':
+            return 9
+        raise Error(f'rank alphabet: {alphabet}')
+
+
     @staticmethod
     def file_rank_to_sq(file, rank):
         return file * 9 + rank
+
+
+    @staticmethod
+    def sq_to_file_rank(sq):
+        return (sq // 9, sq % 9)
 
 
 class BoardHelper():
@@ -197,9 +226,29 @@ class BoardHelper():
 
 
     @staticmethod
-    def get_manhattan_distance(opponent_k_sq, p_file_th, p_rank_th):
+    def get_manhattan_distance(p_sq, q_sq):
         """敵玉と、進んだ駒とのマンハッタン距離"""
-        opponent_k_file = opponent_k_sq // 9 + 1
-        opponent_k_rank = opponent_k_sq % 9 + 1
+        (p_file, p_rank) = Squares.sq_to_file_rank(p_sq)
+        (q_file, q_rank) = Squares.sq_to_file_rank(q_sq)
 
-        return abs(opponent_k_file - p_file_th) + abs(opponent_k_rank - p_rank_th)
+        return abs(p_file -  q_file) + abs(p_rank - q_rank)
+
+
+class UsiHelper():
+    """Usi ヘルパー"""
+
+
+    @staticmethod
+    def code_to_sq(code):
+        """
+
+        Parameters
+        ----------
+        code : str
+            例： `7g` - ７筋、７段
+        """
+
+        file_th = int(code[0: 1])
+        rank_th = Squares.a_to_i(code[1: 2])
+
+        return Squares.file_rank_to_sq(file_th - 1, rank_th - 1)
