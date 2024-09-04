@@ -3,7 +3,7 @@ import datetime
 import random
 
 
-class DefaultUsiEngine():
+class UsiEngine():
     """USI エンジン"""
 
 

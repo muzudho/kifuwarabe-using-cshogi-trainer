@@ -1,14 +1,14 @@
 import cshogi
 import datetime
 import random
-from py_kifuwarabe_trainer import DefaultUsiEngine
+from py_kifuwarabe_trainer import UsiEngine
 
 
 _engine_file_path = "engine_1_0/engine_name.txt"
 
 
-class UsiEngine(DefaultUsiEngine):
-    """USI エンジン"""
+class UsiEngine_1_0(UsiEngine):
+    """USI エンジン Lv. 1.0"""
 
 
     def __init__(self):
