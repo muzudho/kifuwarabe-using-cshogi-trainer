@@ -168,7 +168,7 @@ class UsiEngine():
         self._board.pop()
 
 
-class Squares():
+class SquareHelper():
     """マス番号ヘルパー"""
 
 
@@ -205,6 +205,27 @@ class Squares():
         return (sq // 9, sq % 9)
 
 
+class Move():
+    """指し手"""
+
+
+    def __init__(self, dst_sq):
+        """初期化
+        
+        Parameters
+        ----------
+        dst_sq : int
+            移動先マス番号
+        """
+        self._dst_sq = dst_sq
+
+
+    @property
+    def dst_sq(self):
+        """移動先マス番号"""
+        return self._dst_sq
+
+
 class BoardHelper():
     """盤ヘルパー"""
 
@@ -228,14 +249,14 @@ class BoardHelper():
     @staticmethod
     def get_manhattan_distance(p_sq, q_sq):
         """敵玉と、進んだ駒とのマンハッタン距離"""
-        (p_file, p_rank) = Squares.sq_to_file_rank(p_sq)
-        (q_file, q_rank) = Squares.sq_to_file_rank(q_sq)
+        (p_file, p_rank) = SquareHelper.sq_to_file_rank(p_sq)
+        (q_file, q_rank) = SquareHelper.sq_to_file_rank(q_sq)
 
         return abs(p_file -  q_file) + abs(p_rank - q_rank)
 
 
-class UsiHelper():
-    """Usi ヘルパー"""
+class UsiSquareHelper():
+    """Usi マス番号ヘルパー"""
 
 
     @staticmethod
@@ -249,6 +270,17 @@ class UsiHelper():
         """
 
         file_th = int(code[0: 1])
-        rank_th = Squares.a_to_i(code[1: 2])
+        rank_th = SquareHelper.a_to_i(code[1: 2])
 
-        return Squares.file_rank_to_sq(file_th - 1, rank_th - 1)
+        return SquareHelper.file_rank_to_sq(file_th - 1, rank_th - 1)
+
+
+class UsiMoveHelper():
+    """USI 指し手ヘルパー"""
+
+
+    @staticmethod
+    def code_to_move(code):
+        return Move(
+            # 移動先マス番号
+            dst_sq=UsiSquareHelper.code_to_sq(code[2: 4]))

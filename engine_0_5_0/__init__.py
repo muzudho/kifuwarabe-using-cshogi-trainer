@@ -1,7 +1,7 @@
 import cshogi
 import datetime
 import random
-from py_kifuwarabe_trainer import UsiEngine, Squares, BoardHelper, UsiHelper
+from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper
 
 
 _engine_file_path = "engine_0_5_0/engine_name.txt"
@@ -69,10 +69,12 @@ class UsiEngine_0_5_0(UsiEngine):
         for move in move_list:
             # USI符号
             move_u = cshogi.move_to_usi(move)
-            # 移動先
-            dst_sq = UsiHelper.code_to_sq(move_u[2: 4])
+
+            # 指し手オブジェクト
+            move = UsiMoveHelper.code_to_move(move_u)
+
             # 敵玉とのマンハッタン距離
-            d = BoardHelper.get_manhattan_distance(opponent_k_sq, dst_sq)
+            d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
 
             if d < nearest_distance:
                 nearest_distance = d
