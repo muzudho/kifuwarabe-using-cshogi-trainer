@@ -166,3 +166,40 @@ class UsiEngine():
             code: undo
         """
         self._board.pop()
+
+
+class Squares():
+    """マス番号ヘルパー"""
+
+    @staticmethod
+    def file_rank_to_sq(file, rank):
+        return file * 9 + rank
+
+
+class BoardHelper():
+    """盤ヘルパー"""
+
+
+    @staticmethod
+    def get_opponent_king_sq(board):
+        """敵玉が置いてあるマスの番号
+        
+        Parameters
+        ----------
+        board : cshogi.Board
+            盤
+        """
+        # 敵玉のマス番号
+        if board.turn == cshogi.BLACK:
+            return board.king_square(cshogi.WHITE)
+
+        return board.king_square(cshogi.BLACK)
+
+
+    @staticmethod
+    def get_manhattan_distance(opponent_k_sq, p_file_th, p_rank_th):
+        """敵玉と、進んだ駒とのマンハッタン距離"""
+        opponent_k_file = opponent_k_sq // 9 + 1
+        opponent_k_rank = opponent_k_sq % 9 + 1
+
+        return abs(opponent_k_file - p_file_th) + abs(opponent_k_rank - p_rank_th)

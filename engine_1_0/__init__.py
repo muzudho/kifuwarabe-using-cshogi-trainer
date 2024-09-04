@@ -1,7 +1,7 @@
 import cshogi
 import datetime
 import random
-from py_kifuwarabe_trainer import UsiEngine
+from py_kifuwarabe_trainer import UsiEngine, Squares, BoardHelper
 
 
 _engine_file_path = "engine_1_0/engine_name.txt"
@@ -52,18 +52,7 @@ class UsiEngine_1_0(UsiEngine):
         # --------
 
         # 敵玉のマス番号
-        if self._board.turn == cshogi.BLACK:
-            opponent_k_sq = self._board.king_square(cshogi.WHITE)
-        else:
-            opponent_k_sq = self._board.king_square(cshogi.BLACK)
-
-
-        # 敵玉と、進んだ駒とのマンハッタン距離
-        def get_distance(opponent_k_sq, p_file_th, p_rank_th):
-            opponent_k_file = opponent_k_sq // 9 + 1
-            opponent_k_rank = opponent_k_sq % 9 + 1
-
-            return abs(opponent_k_file - p_file_th) + abs(opponent_k_rank - p_rank_th)
+        opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
 
 
         def a_to_i(alphabet):
@@ -105,7 +94,7 @@ class UsiEngine_1_0(UsiEngine):
             dst_file_th = int(move_u[2: 3])
             dst_rank_th = a_to_i(move_u[3: 4])
             # 敵玉とのマンハッタン距離
-            d = get_distance(opponent_k_sq, dst_file_th, dst_rank_th)
+            d = BoardHelper.get_manhattan_distance(opponent_k_sq, dst_file_th, dst_rank_th)
 
             if d < nearest_distance:
                 nearest_distance = d
