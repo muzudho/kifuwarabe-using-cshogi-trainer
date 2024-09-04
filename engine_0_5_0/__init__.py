@@ -1,7 +1,7 @@
 import cshogi
 import datetime
 import random
-from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper
+from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper, HumanHelper
 
 
 _engine_file_path = "engine_0_5_0/engine_name.txt"
@@ -51,7 +51,8 @@ class UsiEngine_0_5_0(UsiEngine):
         # １手指す
         # --------
 
-        # 敵玉が置いてあるマスの番号
+        # 玉が置いてあるマスの番号
+        friend_k_sq = BoardHelper.get_friend_king_sq(self._board)
         opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
 
 
@@ -66,19 +67,38 @@ class UsiEngine_0_5_0(UsiEngine):
         move_list = list(self._board.legal_moves)
         random.shuffle(move_list)
 
+        # 指し手一覧ループ
         for move in move_list:
+
             # USI符号
             move_u = cshogi.move_to_usi(move)
 
             # 指し手オブジェクト
-            move = UsiMoveHelper.code_to_move(move_u)
+            move = UsiMoveHelper.code_to_move(
+                code=move_u)
 
-            # 敵玉とのマンハッタン距離
+            # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
             d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
+            #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
+            # 自玉が移動した場合、距離を縮めたのなら、指し手一覧ループから抜けて、これで確定
+            #print(f"src_masu={HumanHelper.sq_to_readable(move.src_sq)}  friend_k_masu={HumanHelper.sq_to_readable(friend_k_sq)}")
+            if move.src_sq == friend_k_sq:
+
+                # 動かした玉の移動元位置と、敵玉とのマンハッタン距離
+                d2 = BoardHelper.get_manhattan_distance(opponent_k_sq, move.src_sq)
+
+                if d < d2:
+                    nearest_distance = d
+                    nearest_move_u = move_u
+                    break
+
+                continue
+
+            # 玉以外の駒なら
             if d < nearest_distance:
                 nearest_distance = d
                 nearest_move_u = move_u
 
-        print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 Closest to king")
+        print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 All pieces approach the opponent's king. Especially the king goes first.")
         print(f'bestmove {nearest_move_u}', flush=True)

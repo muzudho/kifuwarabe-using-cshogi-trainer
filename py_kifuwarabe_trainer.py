@@ -209,15 +209,26 @@ class Move():
     """指し手"""
 
 
-    def __init__(self, dst_sq):
+    def __init__(self,
+        src_sq,
+        dst_sq):
         """初期化
         
         Parameters
         ----------
+        src_sq : int
+            移動元マス番号
         dst_sq : int
             移動先マス番号
         """
+        self._src_sq = src_sq
         self._dst_sq = dst_sq
+
+
+    @property
+    def src_sq(self):
+        """移動元マス番号"""
+        return self._src_sq
 
 
     @property
@@ -228,6 +239,22 @@ class Move():
 
 class BoardHelper():
     """盤ヘルパー"""
+
+
+    @staticmethod
+    def get_friend_king_sq(board):
+        """自玉が置いてあるマスの番号
+        
+        Parameters
+        ----------
+        board : cshogi.Board
+            盤
+        """
+        # 自玉のマス番号
+        if board.turn == cshogi.BLACK:
+            return board.king_square(cshogi.BLACK)
+
+        return board.king_square(cshogi.WHITE)
 
 
     @staticmethod
@@ -267,10 +294,19 @@ class UsiSquareHelper():
         ----------
         code : str
             例： `7g` - ７筋、７段
+        
+        Returns
+        -------
+        マス番号、または 0
         """
 
-        file_th = int(code[0: 1])
-        rank_th = SquareHelper.a_to_i(code[1: 2])
+        # TODO 打ではマス番号は返せません
+        if code[0:1] in ['P', 'L', 'N', 'S', 'G', 'B', 'R']:
+            return 0
+
+        else:
+            file_th = int(code[0: 1])
+            rank_th = SquareHelper.a_to_i(code[1: 2])
 
         return SquareHelper.file_rank_to_sq(file_th - 1, rank_th - 1)
 
@@ -282,5 +318,15 @@ class UsiMoveHelper():
     @staticmethod
     def code_to_move(code):
         return Move(
+            # 移動元マス番号
+            src_sq=UsiSquareHelper.code_to_sq(code[0: 2]),
             # 移動先マス番号
             dst_sq=UsiSquareHelper.code_to_sq(code[2: 4]))
+
+
+class HumanHelper():
+    """人間ヘルパー"""
+
+    def sq_to_readable(sq):
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        return f"{file + 1}{rank + 1}"
