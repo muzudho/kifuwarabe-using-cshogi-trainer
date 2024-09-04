@@ -1,6 +1,8 @@
 # kifuwarabe-using-cshogi-trainer
 
 きふわらべの成長を助ける弱いトレーナー
+
+
 ## Visual Studio Code で Python スクリプトを動かす方法
 
 Python を公式からインストールすると環境設定が難しすぎる（不完全な初期状態で設定される）ので、  
@@ -25,6 +27,7 @@ pip install cshogi
 python main.py
 ```
 
+
 ### トラブルシューティング
 
 ```shell
@@ -39,7 +42,19 @@ ImportError: DLL load failed while importing _cshogi: 指定されたモジュ�
 👆　cshogi をインストールしたにも関わらず上記のエラーが出る場合は、パソコンに Python のインタープリターが複数インストールされていて、別のインタープリターを見ている可能性があります。Python のインタープリターの設定を見直してください。  
 VSCode であれば、 `*.py` ファイルを開き、画面の右下の Python のバージョンをクリックしてください  
 
+
 ## 将棋所にエンジン登録する方法
+
+👇 以下のようなフォルダー構成で、１つの将棋エンジンになっている  
+
+```plaintext
+📁 engine_1_0
+　├── 📄 engine_name.txt
+　├── 📄 main.bat
+　├── 📄 main.py
+　└── 📄 README.md
+```
+
 
 例えば、 📄 `main.bat` に以下のように書く。これをエンジン登録する
 
