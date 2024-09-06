@@ -51,39 +51,49 @@ class UsiEngine_1_0(UsiEngine):
         # １手指す
         # --------
 
-        # 敵玉のマス番号
-        opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
-
-
-        # 相手玉と、進んだ駒の距離が最小の手を指す。
-        #
-        #   盤は１辺９マスなので、１番離れているとき８マス。それが２辺で１６マス。
-        #   だから　１７マス離れることはない
-        #
-        nearest_distance = 8 + 8 + 1
-        nearest_move_u = None
-
         move_list = list(self._board.legal_moves)
-        random.shuffle(move_list)
 
-        for move in move_list:
-            # USI符号
-            move_u = cshogi.move_to_usi(move)
+        # 自玉が王手されていたら
+        if self._board.is_check():
+            best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
 
-            # 指し手オブジェクト
-            move = UsiMoveHelper.code_to_move(move_u)
-
-            # 敵玉とのマンハッタン距離
-            d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
-
-            if d < nearest_distance:
-                nearest_distance = d
-                nearest_move_u = move_u
+        else:
+            # 敵玉のマス番号
+            opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
 
 
-        # 指し手が無ければ投了
-        if nearest_move_u is None:
-            nearest_move_u = 'resign'
+            # 相手玉と、進んだ駒の距離が最小の手を指す。
+            #
+            #   盤は１辺９マスなので、１番離れているとき８マス。それが２辺で１６マス。
+            #   だから　１７マス離れることはない
+            #
+            nearest_distance = 8 + 8 + 1
+            nearest_move_u = None
 
-        print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 Closest to king")
-        print(f'bestmove {nearest_move_u}', flush=True)
+            random.shuffle(move_list)
+
+            for move in move_list:
+                # USI符号
+                move_u = cshogi.move_to_usi(move)
+
+                # 指し手オブジェクト
+                move = UsiMoveHelper.code_to_move(move_u)
+
+                # 敵玉とのマンハッタン距離
+                d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
+
+                if d < nearest_distance:
+                    nearest_distance = d
+                    nearest_move_u = move_u
+
+
+            # 指し手が無ければ投了
+            if nearest_move_u is None:
+                nearest_move_u = 'resign'
+
+            best_move_u = nearest_move_u
+
+
+        print(f"""\
+info depth 0 seldepth 0 time 1 nodes 0 score cp 0 Closest to king
+bestmove {best_move_u}""", flush=True)

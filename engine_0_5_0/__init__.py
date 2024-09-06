@@ -51,59 +51,69 @@ class UsiEngine_0_5_0(UsiEngine):
         # １手指す
         # --------
 
-        # 玉が置いてあるマスの番号
-        friend_k_sq = BoardHelper.get_friend_king_sq(self._board)
-        opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
-
-
-        # 相手玉と、進んだ駒の距離が最小の手を指す。
-        #
-        #   盤は１辺９マスなので、１番離れているとき８マス。それが２辺で１６マス。
-        #   だから　１７マス離れることはない
-        #
-        nearest_distance = 8 + 8 + 1
-        nearest_move_u = None
-
         move_list = list(self._board.legal_moves)
-        random.shuffle(move_list)
 
-        # 指し手一覧ループ
-        for move in move_list:
+        # 自玉が王手されていたら
+        if self._board.is_check():
+            best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
 
-            # USI符号
-            move_u = cshogi.move_to_usi(move)
+        else:
+            # 玉が置いてあるマスの番号
+            friend_k_sq = BoardHelper.get_friend_king_sq(self._board)
+            opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
 
-            # 指し手オブジェクト
-            move = UsiMoveHelper.code_to_move(
-                code=move_u)
 
-            # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
-            d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
-            #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
+            # 相手玉と、進んだ駒の距離が最小の手を指す。
+            #
+            #   盤は１辺９マスなので、１番離れているとき８マス。それが２辺で１６マス。
+            #   だから　１７マス離れることはない
+            #
+            nearest_distance = 8 + 8 + 1
+            nearest_move_u = None
 
-            # 自玉が移動した場合、距離を縮めたのなら、指し手一覧ループから抜けて、これで確定
-            #print(f"src_masu={HumanHelper.sq_to_readable(move.src_sq)}  friend_k_masu={HumanHelper.sq_to_readable(friend_k_sq)}")
-            if move.src_sq == friend_k_sq:
+            random.shuffle(move_list)
 
-                # 動かした玉の移動元位置と、敵玉とのマンハッタン距離
-                d2 = BoardHelper.get_manhattan_distance(opponent_k_sq, move.src_sq)
+            # 指し手一覧ループ
+            for move in move_list:
 
-                if d < d2:
+                # USI符号
+                move_u = cshogi.move_to_usi(move)
+
+                # 指し手オブジェクト
+                move = UsiMoveHelper.code_to_move(
+                    code=move_u)
+
+                # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
+                d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
+                #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
+
+                # 自玉が移動した場合、距離を縮めたのなら、指し手一覧ループから抜けて、これで確定
+                #print(f"src_masu={HumanHelper.sq_to_readable(move.src_sq)}  friend_k_masu={HumanHelper.sq_to_readable(friend_k_sq)}")
+                if move.src_sq == friend_k_sq:
+
+                    # 動かした玉の移動元位置と、敵玉とのマンハッタン距離
+                    d2 = BoardHelper.get_manhattan_distance(opponent_k_sq, move.src_sq)
+
+                    if d < d2:
+                        nearest_distance = d
+                        nearest_move_u = move_u
+                        break
+
+                    continue
+
+                # 玉以外の駒なら
+                if d < nearest_distance:
                     nearest_distance = d
                     nearest_move_u = move_u
-                    break
-
-                continue
-
-            # 玉以外の駒なら
-            if d < nearest_distance:
-                nearest_distance = d
-                nearest_move_u = move_u
 
 
-        # 指し手が無ければ投了
-        if nearest_move_u is None:
-            nearest_move_u = 'resign'
+            # 指し手が無ければ投了
+            if nearest_move_u is None:
+                nearest_move_u = 'resign'
 
-        print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 All pieces approach the opponent's king. Especially the king goes first.")
-        print(f'bestmove {nearest_move_u}', flush=True)
+            best_move_u = nearest_move_u
+
+
+        print(f"""\
+info depth 0 seldepth 0 time 1 nodes 0 score cp 0 All pieces approach the opponent's king. Especially the king goes first.
+bestmove {best_move_u}""", flush=True)
