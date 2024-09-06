@@ -1,6 +1,7 @@
 import cshogi
 import datetime
 import random
+from library.shogi import FILE_LEN, RANK_LEN
 
 
 class UsiEngine():
@@ -203,6 +204,147 @@ class SquareHelper():
     @staticmethod
     def sq_to_file_rank(sq):
         return (sq // 9, sq % 9)
+
+
+    @staticmethod
+    def get_west_of(sq):
+        """東隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        file -= 1
+
+        if 0 <= file:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_north_west_of(sq):
+        """東北隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        file -= 1
+        rank -= 1
+
+        if 0 <= file and 0 <= rank:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_north_of(sq):
+        """北隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        rank -= 1
+
+        if 0 <= rank:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_north_west_of(sq):
+        """北西隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        file += 1
+        rank -= 1
+
+        if file < FILE_LEN and 0 < rank:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_west_of(sq):
+        """西隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        file += 1
+
+        if file < FILE_LEN:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_south_west_of(sq):
+        """南西隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        file += 1
+        rank += 1
+
+        if file < FILE_LEN and rank < RANK_LEN:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_south_of(sq):
+        """南隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        rank += 1
+
+        if rank < RANK_LEN:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
+
+    @staticmethod
+    def get_south_east_of(sq):
+        """南東隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        file -= 1
+        rank += 1
+
+        if 0 <= file and rank < RANK_LEN:
+            return SquareHelper.file_rank_to_sq(file, rank)
+        
+        return None
+
 
 
 class Move():

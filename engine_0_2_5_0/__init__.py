@@ -2,6 +2,7 @@ import cshogi
 import datetime
 import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper, HumanHelper
+from library.route_search import KingRouteSearch
 
 
 _engine_file_path = "engine_0_2_5_0/engine_name.txt"
@@ -51,9 +52,19 @@ class UsiEngine_0_2_5_0(UsiEngine):
         # １手指す
         # --------
 
-        # 玉が置いてあるマスの番号
         friend_k_sq = BoardHelper.get_friend_king_sq(self._board)
-        opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
+
+        # 玉の経路探索
+        king_route_search = KingRouteSearch.new_obj(
+                board=self._board,
+                # 自玉があるマスの番号
+                friend_k_sq=friend_k_sq,
+                # 敵玉があるマスの番号
+                opponent_k_sq=BoardHelper.get_opponent_king_sq(self._board))
+
+        # 玉の経路の次の移動先マス。無ければナン
+        friend_k_next_sq = king_route_search.next_sq(friend_k_sq)
+        print(f"{friend_k_next_sq=}")
 
 
         # 相手玉と、進んだ駒の距離が最小の手を指す。
@@ -85,19 +96,27 @@ class UsiEngine_0_2_5_0(UsiEngine):
             #print(f"{dst_piece=}")
 
             # 駒を取るような動きはしません（ただし、玉が動いて駒を取る場合除く）
-            if dst_piece != 0 and move.src_sq != friend_k_sq:
+            if dst_piece != 0 and move.src_sq != king_route_search.friend_k_sq:
                 continue
 
             # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
-            d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
-            #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
+            d = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.dst_sq)
+            #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(king_route_search.opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
             # 自玉が移動した場合、距離を縮めたのなら、指し手一覧ループから抜けて、これで確定
-            #print(f"src_masu={HumanHelper.sq_to_readable(move.src_sq)}  friend_k_masu={HumanHelper.sq_to_readable(friend_k_sq)}")
-            if move.src_sq == friend_k_sq:
+            #print(f"src_masu={HumanHelper.sq_to_readable(move.src_sq)}  friend_k_masu={HumanHelper.sq_to_readable(king_route_search.friend_k_sq)}")
+            if move.src_sq == king_route_search.friend_k_sq:
+
+                # 自玉が敵玉へ近づく最短経路上を進んでいるなら、この指し手で確定
+                if friend_k_next_sq is not None and move_dst_sq == friend_k_next_sq:
+                    backup_king_nearest_distance = d
+                    backup_king_nearest_move_u = move_u
+                    
+                continue
+                    
 
                 # 動かした玉の移動元位置と、敵玉とのマンハッタン距離
-                d2 = BoardHelper.get_manhattan_distance(opponent_k_sq, move.src_sq)
+                d2 = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.src_sq)
 
                 if d < d2:
                     nearest_distance = d
