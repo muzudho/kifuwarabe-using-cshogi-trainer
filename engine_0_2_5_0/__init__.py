@@ -111,8 +111,8 @@ class UsiEngine_0_2_5_0(UsiEngine):
                 dst_piece = self._board.piece(move.dst_sq)
                 #print(f"{dst_piece=}")
 
-                # 駒を取るような動きはしません
-                if dst_piece != 0:
+                # 駒を取るような動きはしません（ただし、玉は最短経路を進みたいので、玉は除く）
+                if dst_piece != 0 and move.src_sq != king_route_search.friend_k_sq:
                     continue
 
                 # 動かした駒の移動元位置と、敵玉とのマンハッタン距離
