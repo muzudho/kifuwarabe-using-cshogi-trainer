@@ -144,9 +144,10 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
             #print("指し手一覧ループ終了")
 
-            # 指し手が無ければ投了
+            # 指し手が無ければ、指せる手をどれでも選ぶ
             if best_move_u is None:
-                best_move_u = 'resign'
+                print("[go] 指し手が無ければ、指せる手をどれでも選ぶ")
+                best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
 
 
         print(f"""\
