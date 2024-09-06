@@ -19,34 +19,26 @@ class KingRouteSearch():
 
     @staticmethod
     def _search_process(route_board, control_board, occupied_board, adjacent_of_end_sq, remaining_distance):
-        #print(f"[_search_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}  {control_board[adjacent_of_end_sq]=}")
         if route_board[adjacent_of_end_sq] == KingRouteSearch._INFINITE and control_board[adjacent_of_end_sq] == 0 and occupied_board[adjacent_of_end_sq] == 0:
-            #print("[_search_process 2]")
-
             # 経路を記入
             route_board[adjacent_of_end_sq] = remaining_distance
 
             # 繰り返しを指示
             return True
 
-        #print("[_search_process 5] 探索終了")
         return False
 
 
     @staticmethod
     def _choice_process(route_board, adjacent_of_end_sq, remaining_distance):
-        print(f"[_choice_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}")
         # 印が付いているところを、戻っていく
         if route_board[adjacent_of_end_sq] == remaining_distance:
-            #print("[_search_process 2]")
-
             # 経路を記入
             route_board[adjacent_of_end_sq] = abs(remaining_distance)
 
             # 繰り返しを指示
             return True
 
-        #print("[_search_process 5] 探索終了")
         return False
 
 
@@ -100,16 +92,12 @@ class KingRouteSearch():
         # 再帰ではなく、ループを使う
         # 幅優先探索
         while 0 < len(adjacent_square_list):
-            #print(f"[search] 幅優先探索 {remaining_distance=}")
-
             # 次の次の探索先
             two_adjacent_square_list = []
 
             for adjacent_sq in adjacent_square_list:
-                #print(f"[search] {adjacent_sq=}")
                 if KingRouteSearch._search_process(route_board, control_board, occupied_board, adjacent_sq, remaining_distance - 1):
                     temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
-                    #print(f"[search] {temp_list=}")
                     two_adjacent_square_list.extend(temp_list)
 
                 if adjacent_sq == end_sq:
@@ -143,10 +131,10 @@ ROUTE BOARD OUTWARD
 
         # DO end に到達した地点で事前探索終了。何回で到達するか数字が分かる
         max_count = abs(remaining_distance)
-        print(f"[search] 復路  {max_count=}  {remaining_distance=}  {len(adjacent_square_list)=}")
+        #print(f"[search] 復路  {max_count=}  {remaining_distance=}  {len(adjacent_square_list)=}")
 
         route_board[end_sq] = max_count
-        print(f"[search] ゴール route_board[{end_sq=}] を {max_count=} にする")
+        #print(f"[search] ゴール route_board[{end_sq=}] を {max_count=} にする")
 
         # 今の隣
         adjacent_square_list = KingRouteSearch.create_adjacent_squares(end_sq)
@@ -164,7 +152,7 @@ ROUTE BOARD 終着点をMAX値にする
 -------------------""")
 
         #
-        # TODO end から start へ逆順に探索。この探索が本番の探索（確定の探索）。ルート盤のマスの負数を絶対値にしていくとちょうど昇順の正の数になっていく
+        # DO end から start へ逆順に探索。この探索が本番の探索（確定の探索）。ルート盤のマスの負数を絶対値にしていくとちょうど昇順の正の数になっていく
         #
 
         is_searched = False
@@ -172,16 +160,12 @@ ROUTE BOARD 終着点をMAX値にする
         # 再帰ではなく、ループを使う
         # 幅優先探索
         while 0 < len(adjacent_square_list):
-            print(f"[search] 幅優先探索 {remaining_distance=}")
-
             # 次の次の探索先
             two_adjacent_square_list = []
 
             for adjacent_sq in adjacent_square_list:
-                #print(f"[search] {adjacent_sq=}")
                 if KingRouteSearch._choice_process(route_board, adjacent_sq, remaining_distance + 1):
                     temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
-                    #print(f"[search] {temp_list=}")
                     two_adjacent_square_list.extend(temp_list)
 
             adjacent_square_list = two_adjacent_square_list
@@ -334,7 +318,6 @@ ROUTE BOARD 終着点をMAX値にする
         for sq in range(0, BOARD_AREA):
             (file, rank) = SquareHelper.sq_to_file_rank(sq)
             piece = board.piece(sq)
-            #print(f"[new_obj] {sq=}  {piece=}")
 
             if (board.turn == cshogi.BLACK and piece in [cshogi.BPAWN, cshogi.BLANCE, cshogi.BKNIGHT, cshogi.BSILVER, cshogi.BGOLD, cshogi.BBISHOP, cshogi.BROOK, cshogi.BKING, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]) or\
                 (board.turn == cshogi.WHITE and piece in [cshogi.WPAWN, cshogi.WLANCE, cshogi.WKNIGHT, cshogi.WSILVER, cshogi.WGOLD, cshogi.WBISHOP, cshogi.WROOK, cshogi.WKING, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]):
@@ -348,7 +331,6 @@ ROUTE BOARD 終着点をMAX値にする
         for sq in range(0, BOARD_AREA):
             (file, rank) = SquareHelper.sq_to_file_rank(sq)
             piece = board.piece(sq)
-            #print(f"[new_obj] {sq=}  {piece=}")
 
             if board.turn == cshogi.BLACK:
                 # ▽歩の利き
@@ -714,9 +696,7 @@ ROUTE BOARD RETURN
         ]
 
         for adjacent_sq in adjacent_squares:
-            print(f"[next_sq] {adjacent_sq=}")
             if adjacent_sq is not None:
-                print(f"[next_sq] {self._route_board[adjacent_sq]=}")
                 if self._route_board[adjacent_sq] == next_distance:
                     return adjacent_sq
 
