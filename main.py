@@ -1,5 +1,6 @@
 # python main.py 1.0
 import sys
+from engine_0_2_5_0 import UsiEngine_0_2_5_0
 from engine_0_5_0 import UsiEngine_0_5_0
 from engine_1_0 import UsiEngine_1_0
 
@@ -18,6 +19,9 @@ if __name__ == '__main__':
         # 引数が付いていなければ、デフォルトのレベルを使う
         if len(args) < 2:
             pass
+
+        elif args[1] == '0.25':
+            usi_engine = UsiEngine_0_2_5_0()
 
         elif args[1] == '0.5':
             usi_engine = UsiEngine_0_5_0()

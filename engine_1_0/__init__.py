@@ -80,5 +80,10 @@ class UsiEngine_1_0(UsiEngine):
                 nearest_distance = d
                 nearest_move_u = move_u
 
+
+        # 指し手が無ければ投了
+        if nearest_move_u is None:
+            nearest_move_u = 'resign'
+
         print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 Closest to king")
         print(f'bestmove {nearest_move_u}', flush=True)

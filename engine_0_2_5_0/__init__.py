@@ -4,11 +4,11 @@ import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper, HumanHelper
 
 
-_engine_file_path = "engine_0_5_0/engine_name.txt"
+_engine_file_path = "engine_0_2_5_0/engine_name.txt"
 
 
-class UsiEngine_0_5_0(UsiEngine):
-    """USI エンジン Lv. 0.5"""
+class UsiEngine_0_2_5_0(UsiEngine):
+    """USI エンジン Lv. 0.25"""
 
 
     def __init__(self):
@@ -64,6 +64,9 @@ class UsiEngine_0_5_0(UsiEngine):
         nearest_distance = 8 + 8 + 1
         nearest_move_u = None
 
+        backup_king_nearest_distance = 8 + 8 + 1
+        backup_king_nearest_move_u = None
+
         move_list = list(self._board.legal_moves)
         random.shuffle(move_list)
 
@@ -76,6 +79,14 @@ class UsiEngine_0_5_0(UsiEngine):
             # 指し手オブジェクト
             move = UsiMoveHelper.code_to_move(
                 code=move_u)
+
+            # 指し手の先の駒
+            dst_piece = self._board.piece(move.dst_sq)
+            #print(f"{dst_piece=}")
+
+            # 駒を取るような動きはしません（ただし、玉が動いて駒を取る場合除く）
+            if dst_piece != 0 and move.src_sq != friend_k_sq:
+                continue
 
             # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
             d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
@@ -93,6 +104,11 @@ class UsiEngine_0_5_0(UsiEngine):
                     nearest_move_u = move_u
                     break
 
+                # 玉を動かした手はとりあえずどれか１つでも一時記憶しておく
+                if d < backup_king_nearest_distance:
+                    backup_king_nearest_distance = d
+                    backup_king_nearest_move_u = move_u
+                    
                 continue
 
             # 玉以外の駒なら
@@ -101,9 +117,16 @@ class UsiEngine_0_5_0(UsiEngine):
                 nearest_move_u = move_u
 
 
-        # 指し手が無ければ投了
+        # 指し手が無ければ
         if nearest_move_u is None:
-            nearest_move_u = 'resign'
 
-        print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 All pieces approach the opponent's king. Especially the king goes first.")
+            # 玉を動かす手があれば、優先されていなくても選ぶ
+            if backup_king_nearest_move_u is not None:
+                nearest_move_u = backup_king_nearest_move_u
+
+            # 投了
+            else:
+                nearest_move_u = 'resign'
+
+        print(f"info depth 0 seldepth 0 time 1 nodes 0 score cp 0 I feed.")
         print(f'bestmove {nearest_move_u}', flush=True)
