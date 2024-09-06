@@ -18,25 +18,44 @@ class KingRouteSearch():
 
 
     @staticmethod
-    def _then_process(route_board, control_board, occupied_board, adjacent_of_end_sq, remaining_distance):
-        #print(f"[_then_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}  {control_board[adjacent_of_end_sq]=}")
+    def _search_process(route_board, control_board, occupied_board, adjacent_of_end_sq, remaining_distance):
+        #print(f"[_search_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}  {control_board[adjacent_of_end_sq]=}")
         if route_board[adjacent_of_end_sq] == KingRouteSearch._INFINITE and control_board[adjacent_of_end_sq] == 0 and occupied_board[adjacent_of_end_sq] == 0:
-            #print("[_then_process 2]")
+            #print("[_search_process 2]")
 
             # 経路を記入
-            route_board[adjacent_of_end_sq] = remaining_distance + 1
+            route_board[adjacent_of_end_sq] = remaining_distance
 
-            # 再帰を指示
+            # 繰り返しを指示
             return True
 
-        #print("[_then_process 5] 探索終了")
+        #print("[_search_process 5] 探索終了")
+        return False
+
+
+    @staticmethod
+    def _choice_process(route_board, adjacent_of_end_sq, remaining_distance):
+        print(f"[_choice_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}")
+        # 印が付いているところを、戻っていく
+        if route_board[adjacent_of_end_sq] == remaining_distance:
+            #print("[_search_process 2]")
+
+            # 経路を記入
+            route_board[adjacent_of_end_sq] = abs(remaining_distance)
+
+            # 繰り返しを指示
+            return True
+
+        #print("[_search_process 5] 探索終了")
         return False
 
 
     @staticmethod
     def create_adjacent_squares(sq):
-        """リストの要素に None が含まれることに注意"""
-        return [
+        """近接するマス番号のリスト生成"""
+
+        # リストの要素に None が含まれることに注意
+        items = [
             SquareHelper.get_east_of(sq),           # 東
             SquareHelper.get_north_east_of(sq),     # 北東
             SquareHelper.get_north_of(sq),          # 北
@@ -46,6 +65,9 @@ class KingRouteSearch():
             SquareHelper.get_south_of(sq),          # 南
             SquareHelper.get_south_east_of(sq),     # 南東
         ]
+
+        # リストの要素から None を除去
+        return list(filter(None, items))
 
 
     @staticmethod
@@ -64,8 +86,16 @@ class KingRouteSearch():
             玉の残り最短移動回数
         """
 
+        #
+        # DO start から end へ向かって事前探索を行う（候補挙げの探索）。 0 から -1,-2 と降順に負数を入れていく
+        #
+
+        is_searched = False
+
+        route_board[friend_k_sq] = 0
+
         # 今の隣
-        adjacent_square_list = KingRouteSearch.create_adjacent_squares(end_sq)
+        adjacent_square_list = KingRouteSearch.create_adjacent_squares(friend_k_sq)
 
         # 再帰ではなく、ループを使う
         # 幅優先探索
@@ -77,17 +107,89 @@ class KingRouteSearch():
 
             for adjacent_sq in adjacent_square_list:
                 #print(f"[search] {adjacent_sq=}")
-                if adjacent_sq is None:
-                    continue
+                if KingRouteSearch._search_process(route_board, control_board, occupied_board, adjacent_sq, remaining_distance - 1):
+                    temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
+                    #print(f"[search] {temp_list=}")
+                    two_adjacent_square_list.extend(temp_list)
 
-                if KingRouteSearch._then_process(route_board, control_board, occupied_board, adjacent_sq, remaining_distance):
+                if adjacent_sq == end_sq:
+                    print(f"[search] ゴールに至った {adjacent_sq=} {len(adjacent_square_list)=}")
+                    is_searched = True
+                    break
+
+            adjacent_square_list = two_adjacent_square_list
+
+            remaining_distance -= 1
+
+            if is_searched:
+                break
+
+        # 経路盤（往路）について
+        print(f"""\
+ROUTE BOARD OUTWARD
+-------------------""")
+        for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+            for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+                sq = SquareHelper.file_rank_to_sq(file, rank)
+                print(f"{route_board[sq]:3} ", end='')
+            print() # 改行
+        print(f"""\
+-------------------""")
+
+        # ゴールに至らないことが分かった時
+        if not is_searched:
+            print("ゴールに至らないことが分かった時")
+            return False
+
+        # DO end に到達した地点で事前探索終了。何回で到達するか数字が分かる
+        max_count = abs(remaining_distance)
+        print(f"[search] 復路  {max_count=}  {remaining_distance=}  {len(adjacent_square_list)=}")
+
+        route_board[end_sq] = max_count
+        print(f"[search] ゴール route_board[{end_sq=}] を {max_count=} にする")
+
+        # 今の隣
+        adjacent_square_list = KingRouteSearch.create_adjacent_squares(end_sq)
+
+        # 経路盤（往路）について
+        print(f"""\
+ROUTE BOARD 終着点をMAX値にする
+-------------------""")
+        for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+            for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+                sq = SquareHelper.file_rank_to_sq(file, rank)
+                print(f"{route_board[sq]:3} ", end='')
+            print() # 改行
+        print(f"""\
+-------------------""")
+
+        #
+        # TODO end から start へ逆順に探索。この探索が本番の探索（確定の探索）。ルート盤のマスの負数を絶対値にしていくとちょうど昇順の正の数になっていく
+        #
+
+        is_searched = False
+
+        # 再帰ではなく、ループを使う
+        # 幅優先探索
+        while 0 < len(adjacent_square_list):
+            print(f"[search] 幅優先探索 {remaining_distance=}")
+
+            # 次の次の探索先
+            two_adjacent_square_list = []
+
+            for adjacent_sq in adjacent_square_list:
+                #print(f"[search] {adjacent_sq=}")
+                if KingRouteSearch._choice_process(route_board, adjacent_sq, remaining_distance + 1):
                     temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
                     #print(f"[search] {temp_list=}")
                     two_adjacent_square_list.extend(temp_list)
 
             adjacent_square_list = two_adjacent_square_list
 
+            # 負数が０に戻っていく
             remaining_distance += 1
+
+        return True
 
 
     def __init__(self, route_board, friend_k_sq, opponent_k_sq):
@@ -550,7 +652,7 @@ OCCUPIED
         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
                 sq = SquareHelper.file_rank_to_sq(file, rank)
-                print(f"{occupied_board[sq]:2} ", end='')
+                print(f"{occupied_board[sq]:3} ", end='')
             print() # 改行
         print(f"""\
 --------""")
@@ -562,26 +664,26 @@ CONTROL BOARD
         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
                 sq = SquareHelper.file_rank_to_sq(file, rank)
-                print(f"{control_board[sq]:2} ", end='')
+                print(f"{control_board[sq]:3} ", end='')
             print() # 改行
         print(f"""\
 -------------""")
 
         # DO 盤上を探索
-        route_board[opponent_k_sq] = 0
-        KingRouteSearch.search(route_board, control_board, occupied_board, friend_k_sq, opponent_k_sq)
+        is_leached = KingRouteSearch.search(route_board, control_board, occupied_board, friend_k_sq, opponent_k_sq)
 
-        # 経路盤について
-        print(f"""\
-ROUTE BOARD
------------""")
-        for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-            for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-                sq = SquareHelper.file_rank_to_sq(file, rank)
-                print(f"{route_board[sq]:2} ", end='')
-            print() # 改行
-        print(f"""\
------------""")
+        if is_leached:
+            # 経路盤（復路）について
+            print(f"""\
+ROUTE BOARD RETURN
+------------------""")
+            for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+                for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+                    sq = SquareHelper.file_rank_to_sq(file, rank)
+                    print(f"{route_board[sq]:3} ", end='')
+                print() # 改行
+            print(f"""\
+------------------""")
 
         return KingRouteSearch(route_board, friend_k_sq, opponent_k_sq)
 
@@ -590,7 +692,8 @@ ROUTE BOARD
         """次のマス。無ければ None"""
 
         remaining_distance = self._route_board[sq]
-        next_distance = remaining_distance - 1
+        # 昇順に上っていく
+        next_distance = remaining_distance + 1
         print(f"[next_sq]  {sq=}  {remaining_distance=}  {next_distance=}")
 
         if remaining_distance == KingRouteSearch._INFINITE:

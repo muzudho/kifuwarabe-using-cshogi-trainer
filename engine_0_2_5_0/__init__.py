@@ -68,6 +68,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
             friend_k_sq = BoardHelper.get_friend_king_sq(self._board)
 
+            print("[go] 玉の経路探索開始")
             # 玉の経路探索
             king_route_search = KingRouteSearch.new_obj(
                     board=self._board,
@@ -77,6 +78,8 @@ class UsiEngine_0_2_5_0(UsiEngine):
                     opponent_k_sq=BoardHelper.get_opponent_king_sq(self._board),
                     # 敵玉自身の利きは無視する
                     without_opponet_king_control=True)
+
+            print("[go] 玉の経路探索終了")
 
             # 玉の経路の次の移動先マス。無ければナン
             friend_k_next_sq = king_route_search.next_sq(friend_k_sq)
