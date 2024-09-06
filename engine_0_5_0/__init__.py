@@ -95,7 +95,10 @@ class UsiEngine_0_5_0(UsiEngine):
                 if move.src_sq == friend_k_sq:
 
                     # 動かした玉の移動元位置と、敵玉とのマンハッタン距離
-                    d2 = BoardHelper.get_manhattan_distance(opponent_k_sq, move.src_sq)
+                    if move.src_sq is None:
+                        e2 = 99
+                    else:
+                        d2 = BoardHelper.get_manhattan_distance(opponent_k_sq, move.src_sq)
 
                     if d < d2:
                         nearest_distance = d

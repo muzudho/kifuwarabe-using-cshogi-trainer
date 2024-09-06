@@ -55,14 +55,16 @@ class UsiEngine_0_2_5_0(UsiEngine):
         move_list = list(self._board.legal_moves)
 
         if len(move_list) < 1:
+            print("[go] 合法手無し")
             best_move_u = "resign"
 
         # 自玉が王手されていたら
         elif self._board.is_check():
+            print("[go] 自玉が王手されてる")
             best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
         
         else:
-            random.shuffle(move_list)
+            best_move_u = None
 
             friend_k_sq = BoardHelper.get_friend_king_sq(self._board)
 
@@ -78,15 +80,18 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
             # 玉の経路の次の移動先マス。無ければナン
             friend_k_next_sq = king_route_search.next_sq(friend_k_sq)
-            print(f"{friend_k_next_sq=}")
+            print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_k_next_sq=}  {friend_k_sq=}")
 
-            # 相手玉と、進んだ駒の距離が最小の手を指す。
+            # 相手玉と、進んだ駒の距離が縮まる動きのうち、相手玉から一番遠い駒を選ぶ
             #
             #   盤は１辺９マスなので、１番離れているとき８マス。それが２辺で１６マス。
             #   だから　１７マス離れることはない
             #
-            nearest_distance = 8 + 8 + 1
-            nearest_move_u = None
+            farthest_distance = 0
+            #nearest_distance = 8 + 8 + 1
+            is_nearest_route = False
+
+            random.shuffle(move_list)
 
             # 指し手一覧ループ
             for move in move_list:
@@ -103,37 +108,45 @@ class UsiEngine_0_2_5_0(UsiEngine):
                 dst_piece = self._board.piece(move.dst_sq)
                 #print(f"{dst_piece=}")
 
-                # 駒を取るような動きはしません（ただし、玉が動いて駒を取る場合除く）
-                if dst_piece != 0 and move.src_sq != king_route_search.friend_k_sq:
+                # 駒を取るような動きはしません
+                if dst_piece != 0:
                     continue
 
+                # 動かした駒の移動元位置と、敵玉とのマンハッタン距離
+                if move.src_sq is None:
+                    d_of_src = 99
+                else:
+                    d_of_src = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.src_sq)
+
                 # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
-                d = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.dst_sq)
+                d_of_dst = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.dst_sq)
                 #print(f"{d=}")
                 #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(king_route_search.opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
-                # 自玉が移動した場合、距離を縮めたのなら、指し手一覧ループから抜けて、これで確定
-                #print(f"src_masu={HumanHelper.sq_to_readable(move.src_sq)}  friend_k_masu={HumanHelper.sq_to_readable(king_route_search.friend_k_sq)}")
+                # 自玉が移動した場合、敵玉へ近づく最短経路を調べるアルゴリズムがあるので、それを使う
                 if move.src_sq == king_route_search.friend_k_sq:
 
-                    # 自玉が敵玉へ近づく最短経路上を進んでいるなら、この指し手で確定
+                    # 自玉が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
                     if friend_k_next_sq is not None and move.dst_sq == friend_k_next_sq:
-                        nearest_distance = d
-                        nearest_move_u = move_u
-                        break
+                        best_move_u = move_u
+                        is_nearest_route = True
+
+                    # 最短経路を進めるなら、それ以外の動きは選ばない
+                    if is_nearest_route:
+                        continue
                         
                 # 玉以外の駒なら
-                if d < nearest_distance:
-                    nearest_distance = d
-                    nearest_move_u = move_u
+
+                # 相手玉と、進んだ駒の距離が縮まる動きだ。かつ、相手玉から一番遠い駒だ
+                if d_of_dst < d_of_src and farthest_distance < d_of_src:
+                    farthest_distance = d_of_src
+                    best_move_u = move_u
 
             #print("指し手一覧ループ終了")
 
             # 指し手が無ければ投了
-            if nearest_move_u is None:
-                nearest_move_u = 'resign'
-
-            best_move_u = nearest_move_u
+            if best_move_u is None:
+                best_move_u = 'resign'
 
 
         print(f"""\

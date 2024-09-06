@@ -215,10 +215,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        file -= 1
-
-        if 0 <= file:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if 0 < file:
+            return SquareHelper.file_rank_to_sq(file-1, rank)
         
         return None
 
@@ -232,11 +230,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        file -= 1
-        rank -= 1
-
-        if 0 <= file and 0 <= rank:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if 0 < file and 0 < rank:
+            return SquareHelper.file_rank_to_sq(file-1, rank-1)
         
         return None
 
@@ -250,10 +245,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        rank -= 1
-
-        if 0 <= rank:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if 0 < rank:
+            return SquareHelper.file_rank_to_sq(file, rank-1)
         
         return None
 
@@ -267,11 +260,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        file += 1
-        rank -= 1
-
-        if file < FILE_LEN and 0 < rank:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if file + 1 < FILE_LEN and 0 < rank:
+            return SquareHelper.file_rank_to_sq(file+1, rank-1)
         
         return None
 
@@ -285,10 +275,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        file += 1
-
-        if file < FILE_LEN:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if file + 1 < FILE_LEN:
+            return SquareHelper.file_rank_to_sq(file+1, rank)
         
         return None
 
@@ -302,11 +290,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        file += 1
-        rank += 1
-
-        if file < FILE_LEN and rank < RANK_LEN:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if file + 1 < FILE_LEN and rank + 1 < RANK_LEN:
+            return SquareHelper.file_rank_to_sq(file+1, rank+1)
         
         return None
 
@@ -320,10 +305,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        rank += 1
-
-        if rank < RANK_LEN:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if rank + 1 < RANK_LEN:
+            return SquareHelper.file_rank_to_sq(file, rank + 1)
         
         return None
 
@@ -337,11 +320,8 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        file -= 1
-        rank += 1
-
-        if 0 <= file and rank < RANK_LEN:
-            return SquareHelper.file_rank_to_sq(file, rank)
+        if 0 < file and rank + 1 < RANK_LEN:
+            return SquareHelper.file_rank_to_sq(file - 1, rank + 1)
         
         return None
 
@@ -360,6 +340,7 @@ class Move():
         ----------
         src_sq : int
             移動元マス番号
+            駒台ならナン
         dst_sq : int
             移動先マス番号
         """
@@ -369,7 +350,9 @@ class Move():
 
     @property
     def src_sq(self):
-        """移動元マス番号"""
+        """移動元マス番号
+        駒台ならナン
+        """
         return self._src_sq
 
 
@@ -429,7 +412,7 @@ class UsiSquareHelper():
 
 
     @staticmethod
-    def code_to_sq(code):
+    def code_to_sq(code, can_panic=False):
         """
 
         Parameters
@@ -439,12 +422,15 @@ class UsiSquareHelper():
         
         Returns
         -------
-        マス番号、または 0
+        マス番号、駒台の駒を指してたらナン
         """
 
         # TODO 打ではマス番号は返せません
         if code[0:1] in ['P', 'L', 'N', 'S', 'G', 'B', 'R']:
-            return 0
+            if can_panic:
+                raise ValueError(f"it is drop move. {code=}")
+            
+            return None
 
         else:
             file_th = int(code[0: 1])
@@ -460,10 +446,10 @@ class UsiMoveHelper():
     @staticmethod
     def code_to_move(code):
         return Move(
-            # 移動元マス番号
+            # 移動元マス番号 FIXME 駒台注意
             src_sq=UsiSquareHelper.code_to_sq(code[0: 2]),
             # 移動先マス番号
-            dst_sq=UsiSquareHelper.code_to_sq(code[2: 4]))
+            dst_sq=UsiSquareHelper.code_to_sq(code[2: 4], can_panic=True))
 
 
 class HumanHelper():

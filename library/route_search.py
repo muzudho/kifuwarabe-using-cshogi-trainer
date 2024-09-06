@@ -18,19 +18,15 @@ class KingRouteSearch():
 
 
     @staticmethod
-    def _then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_of_end_sq, remaining_distance):
+    def _then_process(route_board, control_board, occupied_board, adjacent_of_end_sq, remaining_distance):
         #print(f"[_then_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}  {control_board[adjacent_of_end_sq]=}")
         if route_board[adjacent_of_end_sq] == KingRouteSearch._INFINITE and control_board[adjacent_of_end_sq] == 0 and occupied_board[adjacent_of_end_sq] == 0:
             #print("[_then_process 2]")
+
+            # 経路を記入
             route_board[adjacent_of_end_sq] = remaining_distance + 1
 
-            # 探索終了
-            if adjacent_of_end_sq == friend_k_sq:
-                #print("[_then_process 3] 探索終了")
-                return False
-
-            # 再帰
-            #print("[_then_process 4] 探索続行")
+            # 再帰を指示
             return True
 
         #print("[_then_process 5] 探索終了")
@@ -57,59 +53,27 @@ class KingRouteSearch():
 
         (end_sq_file, end_sq_rank) = SquareHelper.sq_to_file_rank(end_sq)
 
+        adjacent_squares = [
+            SquareHelper.get_east_of(end_sq),           # 東
+            SquareHelper.get_north_east_of(end_sq),     # 北東
+            SquareHelper.get_north_of(end_sq),          # 北
+            SquareHelper.get_north_west_of(end_sq),     # 北西
+            SquareHelper.get_west_of(end_sq),           # 西
+            SquareHelper.get_south_west_of(end_sq),     # 南西
+            SquareHelper.get_south_of(end_sq),          # 南
+            SquareHelper.get_south_east_of(end_sq),     # 南東
+        ]
+
         # 幅優先探索
-        adjacent_squares = []
+        adjacent_squares_to_search = []
 
-        # 東
-        adjacent_sq = SquareHelper.get_east_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 北東
-        adjacent_sq = SquareHelper.get_north_east_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 北
-        adjacent_sq = SquareHelper.get_north_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 北西
-        adjacent_sq = SquareHelper.get_north_west_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 西
-        adjacent_sq = SquareHelper.get_west_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 南西
-        adjacent_sq = SquareHelper.get_south_west_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 南
-        adjacent_sq = SquareHelper.get_south_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
-
-        # 南東
-        adjacent_sq = SquareHelper.get_south_east_of(end_sq)
-        if adjacent_sq is not None:
-            if KingRouteSearch._then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance):
-                adjacent_squares.append(adjacent_sq)
+        for adjacent_sq in adjacent_squares:
+            if adjacent_sq is not None:
+                if KingRouteSearch._then_process(route_board, control_board, occupied_board, adjacent_sq, remaining_distance):
+                    adjacent_squares_to_search.append(adjacent_sq)
 
         # 再帰
-        for adjacent_sq in adjacent_squares:
+        for adjacent_sq in adjacent_squares_to_search:
             KingRouteSearch.search(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance + 1)
 
 
@@ -592,6 +556,7 @@ CONTROL BOARD
 -------------""")
 
         # DO 盤上を探索
+        route_board[opponent_k_sq] = 0
         KingRouteSearch.search(route_board, control_board, occupied_board, friend_k_sq, opponent_k_sq)
 
         # 経路盤について
@@ -613,7 +578,8 @@ ROUTE BOARD
         """次のマス。無ければ None"""
 
         remaining_distance = self._route_board[sq]
-        print(f"[next_sq]  {sq=}  {remaining_distance=}")
+        next_distance = remaining_distance - 1
+        print(f"[next_sq]  {sq=}  {remaining_distance=}  {next_distance=}")
 
         if remaining_distance == KingRouteSearch._INFINITE:
             print(f"[next_sq] 移動不可")
@@ -621,47 +587,26 @@ ROUTE BOARD
 
 
         # ８方向のどこかに、移動回数が１小さいマスがある
-        # 東
-        adjacent_sq = SquareHelper.get_west_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
+        adjacent_squares = [
+            SquareHelper.get_west_of(sq),           # 東
+            SquareHelper.get_north_west_of(sq),     # 東北
+            SquareHelper.get_north_of(sq),          # 北
+            SquareHelper.get_north_west_of(sq),     # 北西
+            SquareHelper.get_west_of(sq),           # 西
+            SquareHelper.get_south_west_of(sq),     # 南西
+            SquareHelper.get_south_of(sq),          # 南
+            SquareHelper.get_south_east_of(sq),     # 南東
+        ]
 
-        # 東北
-        adjacent_sq = SquareHelper.get_north_west_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
-
-        # 北
-        adjacent_sq = SquareHelper.get_north_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
-
-        # 北西
-        adjacent_sq = SquareHelper.get_north_west_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
-
-        # 西
-        adjacent_sq = SquareHelper.get_west_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
-
-        # 南西
-        adjacent_sq = SquareHelper.get_south_west_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
-
-        # 南
-        adjacent_sq = SquareHelper.get_south_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
-
-        # 南東
-        adjacent_sq = SquareHelper.get_south_east_of(sq)
-        if adjacent_sq is not None and self._route_board[adjacent_sq] == remaining_distance - 1:
-            return adjacent_sq
+        for adjacent_sq in adjacent_squares:
+            print(f"[next_sq] {adjacent_sq=}")
+            if adjacent_sq is not None:
+                print(f"[next_sq] {self._route_board[adjacent_sq]=}")
+                if self._route_board[adjacent_sq] == next_distance:
+                    return adjacent_sq
 
 
+        print(f"[next_sq] ８方向に移動不可")
         return None
 
 
