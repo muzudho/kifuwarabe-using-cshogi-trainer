@@ -53,8 +53,11 @@ class UsiEngine_1_0(UsiEngine):
 
         move_list = list(self._board.legal_moves)
 
+        if len(move_list) < 1:
+            best_move_u = "resign"
+
         # 自玉が王手されていたら
-        if self._board.is_check():
+        elif self._board.is_check():
             best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
 
         else:

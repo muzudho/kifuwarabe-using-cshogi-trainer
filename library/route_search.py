@@ -141,8 +141,13 @@ class KingRouteSearch():
 
                 # ▽桂の利き
                 elif piece == cshogi.WKNIGHT:
-                    control_board[sq+SOUTH_SOUTH_WEST] += 1
-                    control_board[sq+SOUTH_SOUTH_EAST] += 1
+                    # 南に行けるか？
+                    if rank + 2 < RANK_LEN:
+                        if file + 1 < FILE_LEN:
+                            control_board[sq+SOUTH_SOUTH_WEST] += 1
+                        
+                        if 0 < file - 1:
+                            control_board[sq+SOUTH_SOUTH_EAST] += 1
 
                 # ▽銀の利き
                 elif piece == cshogi.WSILVER:
@@ -326,8 +331,13 @@ class KingRouteSearch():
 
                 # ▲桂の利き
                 elif piece == cshogi.BKNIGHT:
-                    control_board[sq+NORTH_NORTH_EAST] += 1
-                    control_board[sq+NORTH_NORTH_WEST] += 1
+                    # 北に行けるか？
+                    if 0 < rank - 2:
+                        if 0 < file - 1:
+                            control_board[sq+NORTH_NORTH_EAST] += 1
+                        
+                        if file + 1 < FILE_LEN:
+                            control_board[sq+NORTH_NORTH_WEST] += 1
 
                 # ▲銀の利き
                 elif piece == cshogi.BSILVER:
@@ -514,6 +524,18 @@ CONTROL BOARD
             print() # 改行
         print(f"""\
 -------------""")
+
+        # 経路盤について
+        print(f"""\
+ROUTE BOARD
+-----------""")
+        for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+            for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+                sq = SquareHelper.file_rank_to_sq(file, rank)
+                print(f"{route_board[sq]} ", end='')
+            print() # 改行
+        print(f"""\
+-----------""")
 
         # DO 盤上を探索
         KingRouteSearch.search(route_board, control_board, friend_k_sq, opponent_k_sq)

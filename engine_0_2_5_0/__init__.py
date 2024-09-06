@@ -54,8 +54,11 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
         move_list = list(self._board.legal_moves)
 
+        if len(move_list) < 1:
+            best_move_u = "resign"
+
         # 自玉が王手されていたら
-        if self._board.is_check():
+        elif self._board.is_check():
             best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
         
         else:
@@ -85,7 +88,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
             # 指し手一覧ループ
             for move in move_list:
-                print("指し手一覧ループ")
+                #print("指し手一覧ループ")
 
                 # USI符号
                 move_u = cshogi.move_to_usi(move)
@@ -104,7 +107,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
                 # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
                 d = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.dst_sq)
-                print(f"{d=}")
+                #print(f"{d=}")
                 #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(king_route_search.opponent_k_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
                 # 自玉が移動した場合、距離を縮めたのなら、指し手一覧ループから抜けて、これで確定
@@ -122,7 +125,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
                     nearest_distance = d
                     nearest_move_u = move_u
 
-            print("指し手一覧ループ終了")
+            #print("指し手一覧ループ終了")
 
             # 指し手が無ければ投了
             if nearest_move_u is None:
