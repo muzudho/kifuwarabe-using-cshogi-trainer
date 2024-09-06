@@ -2,6 +2,7 @@ import cshogi
 import datetime
 import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper
+from library.route_search import KingRouteSearch
 
 
 _engine_file_path = "engine_1_0/engine_name.txt"
@@ -61,8 +62,22 @@ class UsiEngine_1_0(UsiEngine):
             best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
 
         else:
-            # 敵玉のマス番号
-            opponent_k_sq = BoardHelper.get_opponent_king_sq(self._board)
+            best_move_u = None
+            is_nearest_route = False
+
+            # 玉の経路探索開始
+            king_route_search = KingRouteSearch.new_obj(
+                    board=self._board,
+                    # 自玉があるマスの番号
+                    friend_k_sq=BoardHelper.get_friend_king_sq(self._board),
+                    # 敵玉があるマスの番号
+                    opponent_k_sq=BoardHelper.get_opponent_king_sq(self._board),
+                    # 敵玉自身の利きは無視する
+                    without_opponet_king_control=True)
+
+            # 玉の経路の次の移動先マス。無ければナン
+            friend_k_next_sq = king_route_search.next_sq(king_route_search.friend_k_sq)
+            print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_k_next_sq=}  {king_route_search.friend_k_sq=}")
 
 
             # 相手玉と、進んだ駒の距離が最小の手を指す。
@@ -71,7 +86,6 @@ class UsiEngine_1_0(UsiEngine):
             #   だから　１７マス離れることはない
             #
             nearest_distance = 8 + 8 + 1
-            nearest_move_u = None
 
             random.shuffle(move_list)
 
@@ -82,19 +96,30 @@ class UsiEngine_1_0(UsiEngine):
                 # 指し手オブジェクト
                 move = UsiMoveHelper.code_to_move(move_u)
 
+                # 自玉が移動した場合、敵玉へ近づく最短経路を調べるアルゴリズムがあるので、それを使う
+                if move.src_sq == king_route_search.friend_k_sq:
+
+                    # 自玉が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
+                    if friend_k_next_sq is not None and move.dst_sq == friend_k_next_sq:
+                        best_move_u = move_u
+                        is_nearest_route = True
+
+                    # 最短経路を進めるなら、それ以外の動きは選ばない
+                    if is_nearest_route:
+                        continue
+
                 # 敵玉とのマンハッタン距離
-                d = BoardHelper.get_manhattan_distance(opponent_k_sq, move.dst_sq)
+                d = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.dst_sq)
 
                 if d < nearest_distance:
                     nearest_distance = d
-                    nearest_move_u = move_u
+                    best_move_u = move_u
 
 
-            # 指し手が無ければ投了
-            if nearest_move_u is None:
-                nearest_move_u = 'resign'
-
-            best_move_u = nearest_move_u
+            # 指し手が無ければ、指せる手をどれでも選ぶ
+            if best_move_u is None:
+                print("[go] 指し手が無ければ、指せる手をどれでも選ぶ")
+                best_move_u = cshogi.move_to_usi(random.sample(move_list, 1)[0])
 
 
         print(f"""\
