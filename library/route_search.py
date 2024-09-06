@@ -252,6 +252,7 @@ class KingRouteSearch():
         occupied_board = [0] * BOARD_AREA
 
         # 全てのマスの自駒について
+        occupied_without_king = True    # 両玉除く
         for sq in range(0, BOARD_AREA):
             (file, rank) = SquareHelper.sq_to_file_rank(sq)
             piece = board.piece(sq)
@@ -259,6 +260,10 @@ class KingRouteSearch():
 
             if (board.turn == cshogi.BLACK and piece in [cshogi.BPAWN, cshogi.BLANCE, cshogi.BKNIGHT, cshogi.BSILVER, cshogi.BGOLD, cshogi.BBISHOP, cshogi.BROOK, cshogi.BKING, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]) or\
                 (board.turn == cshogi.WHITE and piece in [cshogi.WPAWN, cshogi.WLANCE, cshogi.WKNIGHT, cshogi.WSILVER, cshogi.WGOLD, cshogi.WBISHOP, cshogi.WROOK, cshogi.WKING, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]):
+
+                if occupied_without_king and piece in [cshogi.BKING, cshogi.WKING]:
+                    continue
+
                 occupied_board[sq] += 1
 
         # 全てのマスの駒について
@@ -607,9 +612,11 @@ ROUTE BOARD
     def next_sq(self, sq):
         """次のマス。無ければ None"""
 
-        remaining_distance = self._route_board[self._friend_k_sq]
+        remaining_distance = self._route_board[sq]
+        print(f"[next_sq]  {sq=}  {remaining_distance=}")
 
         if remaining_distance == KingRouteSearch._INFINITE:
+            print(f"[next_sq] 移動不可")
             return None
 
 

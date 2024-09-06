@@ -117,7 +117,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
                 if move.src_sq == king_route_search.friend_k_sq:
 
                     # 自玉が敵玉へ近づく最短経路上を進んでいるなら、この指し手で確定
-                    if friend_k_next_sq is not None and move_dst_sq == friend_k_next_sq:
+                    if friend_k_next_sq is not None and move.dst_sq == friend_k_next_sq:
                         nearest_distance = d
                         nearest_move_u = move_u
                         break
