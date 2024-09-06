@@ -19,21 +19,21 @@ class KingRouteSearch():
 
     @staticmethod
     def _then_process(route_board, control_board, occupied_board, friend_k_sq, adjacent_of_end_sq, remaining_distance):
-        print(f"[_then_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}  {control_board[adjacent_of_end_sq]=}")
+        #print(f"[_then_process 1]  {remaining_distance=}  {adjacent_of_end_sq=}  {route_board[adjacent_of_end_sq]=}  {control_board[adjacent_of_end_sq]=}")
         if route_board[adjacent_of_end_sq] == KingRouteSearch._INFINITE and control_board[adjacent_of_end_sq] == 0 and occupied_board[adjacent_of_end_sq] == 0:
-            print("[_then_process 2]")
+            #print("[_then_process 2]")
             route_board[adjacent_of_end_sq] = remaining_distance + 1
 
             # 探索終了
             if adjacent_of_end_sq == friend_k_sq:
-                print("[_then_process 3] 探索終了")
+                #print("[_then_process 3] 探索終了")
                 return False
 
             # 再帰
-            print("[_then_process 4] 探索続行")
+            #print("[_then_process 4] 探索続行")
             return True
 
-        print("[_then_process 5] 探索終了")
+        #print("[_then_process 5] 探索終了")
         return False
 
 
@@ -53,7 +53,7 @@ class KingRouteSearch():
             玉の残り最短移動回数
         """
 
-        print(f"[search]  {remaining_distance=}  {end_sq=}")
+        #print(f"[search]  {remaining_distance=}  {end_sq=}")
 
         (end_sq_file, end_sq_rank) = SquareHelper.sq_to_file_rank(end_sq)
 
@@ -132,6 +132,108 @@ class KingRouteSearch():
         self._friend_k_sq = friend_k_sq
         self._opponent_k_sq = opponent_k_sq
         self._route_board = route_board
+
+
+    @staticmethod
+    def append_control_of_bishop(board, control_board, file, rank):
+        """角の利きを追加"""
+
+        # 北東への動き
+        for delta in range(1, min(FILE_LEN, RANK_LEN)):
+            control_file = file - delta
+            control_rank = rank - delta
+            if control_file < 0 or control_rank < 0:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+        # 北西への動き
+        for delta in range(1, min(FILE_LEN, RANK_LEN)):
+            control_file = file + delta
+            control_rank = rank - delta
+            if FILE_LEN <= control_file or control_rank < 0:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+        # 南西への動き
+        for delta in range(1, min(FILE_LEN, RANK_LEN)):
+            control_file = file + delta
+            control_rank = rank + delta
+            if FILE_LEN <= control_file or RANK_LEN <= control_rank:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+        # 南東への動き
+        for delta in range(1, min(FILE_LEN, RANK_LEN)):
+            control_file = file - delta
+            control_rank = rank + delta
+            if control_file < 0 or RANK_LEN <= control_rank:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+
+    @staticmethod
+    def append_control_of_rook(board, control_board, file, rank):
+        """飛の利きを追加"""
+
+        # 東への動き
+        for delta in range(1, FILE_LEN):
+            control_file = file - delta
+            if control_file < 0:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+        # 北への動き
+        for delta in range(1, RANK_LEN):
+            control_rank = rank - delta
+            if control_rank < 0:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+        # 西への動き
+        for delta in range(1, FILE_LEN):
+            control_file = file + delta
+            if FILE_LEN <= control_file:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
+
+        # 南への動き
+        for delta in range(1, RANK_LEN):
+            control_rank = rank + delta
+            if RANK_LEN <= control_rank:
+                break
+            control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
+            control_board[control_sq] += 1
+
+            if board.piece(control_sq) != 0:
+                break
 
 
     @staticmethod
@@ -233,99 +335,11 @@ class KingRouteSearch():
 
                 # ▽角の利き
                 elif piece == cshogi.WBISHOP:
-                    # 南西への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file + delta
-                        control_rank = rank + delta
-                        if FILE_LEN <= control_file or RANK_LEN <= control_rank:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 南東への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file - delta
-                        control_rank = rank + delta
-                        if control_file < 0 or RANK_LEN <= control_rank:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 北東への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file - delta
-                        control_rank = rank - delta
-                        if control_file < 0 or control_rank < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 北西への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file + delta
-                        control_rank = rank - delta
-                        if FILE_LEN <= control_file or control_rank < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
+                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
 
                 # ▽飛の利き
                 elif piece == cshogi.WROOK:
-                    # 西への動き
-                    for delta in range(1, FILE_LEN):
-                        control_file = file + delta
-                        if FILE_LEN <= control_file:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 南への動き
-                    for delta in range(1, RANK_LEN):
-                        control_rank = rank + delta
-                        if RANK_LEN <= control_rank:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 東への動き
-                    for delta in range(1, FILE_LEN):
-                        control_file = file - delta
-                        if control_file < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 北への動き
-                    for delta in range(1, RANK_LEN):
-                        control_rank = rank - delta
-                        if control_rank < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
+                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
 
                 # ▽玉の利き
                 elif piece == cshogi.WKING:
@@ -357,6 +371,44 @@ class KingRouteSearch():
 
                         if file + 1 < FILE_LEN:
                             control_board[sq+NORTH_WEST] += 1
+
+                # ▽馬の利き
+                elif piece == cshogi.WPROM_BISHOP:
+                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
+
+                    # 南に行けるか？
+                    if rank + 1 < RANK_LEN:
+                        if file + 1 < FILE_LEN:
+                            control_board[sq+SOUTH_WEST] += 1
+
+                        if 0 < file - 1:
+                            control_board[sq+SOUTH_EAST] += 1
+
+                    # 北に行けるか？
+                    if 0 < rank - 1:
+                        if 0 < file - 1:
+                            control_board[sq+NORTH_EAST] += 1
+    
+                        if file + 1 < FILE_LEN:
+                            control_board[sq+NORTH_WEST] += 1
+
+                # ▽竜の利き
+                elif piece == cshogi.WPROM_ROOK:
+                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+
+                    if file + 1 < FILE_LEN:
+                        control_board[sq+WEST] += 1
+
+                    # 南に行けるか？
+                    if rank + 1 < RANK_LEN:
+                        control_board[sq+SOUTH] += 1
+
+                    if 0 < file - 1:
+                        control_board[sq+EAST] += 1
+
+                    # 北に行けるか？
+                    if 0 < rank - 1:
+                        control_board[sq+NORTH] += 1
 
             elif board.turn == cshogi.WHITE:
                 # ▲歩の利き
@@ -426,99 +478,11 @@ class KingRouteSearch():
 
                 # ▲角の利き
                 elif piece == cshogi.BBISHOP:
-                    # 北東への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file - delta
-                        control_rank = rank - delta
-                        if control_file < 0 or control_rank < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 北西への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file + delta
-                        control_rank = rank - delta
-                        if FILE_LEN <= control_file or control_rank < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 南西への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file + delta
-                        control_rank = rank + delta
-                        if FILE_LEN <= control_file or RANK_LEN <= control_rank:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 南東への動き
-                    for delta in range(1, min(FILE_LEN, RANK_LEN)):
-                        control_file = file - delta
-                        control_rank = rank + delta
-                        if control_file < 0 or RANK_LEN <= control_rank:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
+                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
 
                 # ▲飛の利き
                 elif piece == cshogi.BROOK:
-                    # 東への動き
-                    for delta in range(1, FILE_LEN):
-                        control_file = file - delta
-                        if control_file < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 北への動き
-                    for delta in range(1, RANK_LEN):
-                        control_rank = rank - delta
-                        if control_rank < 0:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 西への動き
-                    for delta in range(1, FILE_LEN):
-                        control_file = file + delta
-                        if FILE_LEN <= control_file:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
-
-                    # 南への動き
-                    for delta in range(1, RANK_LEN):
-                        control_rank = rank + delta
-                        if RANK_LEN <= control_rank:
-                            break
-                        control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
-                        control_board[control_sq] += 1
-
-                        if board.piece(control_sq) != 0:
-                            break
+                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
 
                 # ▲玉の利き
                 elif piece == cshogi.BKING:
@@ -550,6 +514,45 @@ class KingRouteSearch():
 
                         if 0 < file - 1:
                             control_board[sq+SOUTH_EAST] += 1
+
+                # ▲馬の利き
+                elif piece == cshogi.BPROM_BISHOP:
+                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
+
+                    # 北に行けるか？
+                    if 0 < rank - 1:
+                        if 0 < file - 1:
+                            control_board[sq+NORTH_EAST] += 1
+
+                        if file + 1 < FILE_LEN:
+                            control_board[sq+NORTH_WEST] += 1
+
+                    # 南に行けるか？
+                    if rank + 1 < RANK_LEN:
+                        if file + 1 < FILE_LEN:
+                            control_board[sq+SOUTH_WEST] += 1
+
+                        if 0 < file - 1:
+                            control_board[sq+SOUTH_EAST] += 1
+
+                # ▲竜の利き
+                elif piece == cshogi.BPROM_ROOK:
+                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+
+                    if 0 < file - 1:
+                        control_board[sq+EAST] += 1
+
+                    # 北に行けるか？
+                    if 0 < rank - 1:
+                        control_board[sq+NORTH] += 1
+
+                    if file + 1 < FILE_LEN:
+                        control_board[sq+WEST] += 1
+
+                    # 南に行けるか？
+                    if rank + 1 < RANK_LEN:
+                        control_board[sq+SOUTH] += 1
+
 
         # def each_legal_move(move):
         #     # TODO 相手の駒の利きを調べたい
