@@ -34,6 +34,21 @@ class KingRouteSearch():
 
 
     @staticmethod
+    def create_adjacent_squares(sq):
+        """リストの要素に None が含まれることに注意"""
+        return [
+            SquareHelper.get_east_of(sq),           # 東
+            SquareHelper.get_north_east_of(sq),     # 北東
+            SquareHelper.get_north_of(sq),          # 北
+            SquareHelper.get_north_west_of(sq),     # 北西
+            SquareHelper.get_west_of(sq),           # 西
+            SquareHelper.get_south_west_of(sq),     # 南西
+            SquareHelper.get_south_of(sq),          # 南
+            SquareHelper.get_south_east_of(sq),     # 南東
+        ]
+
+
+    @staticmethod
     def search(route_board, control_board, occupied_board, friend_k_sq, end_sq, remaining_distance=0):
         """end_sq から friend_k_sq に向かって経路を伸ばします
 
@@ -49,33 +64,30 @@ class KingRouteSearch():
             玉の残り最短移動回数
         """
 
-        #print(f"[search]  {remaining_distance=}  {end_sq=}")
+        # 今の隣
+        adjacent_square_list = KingRouteSearch.create_adjacent_squares(end_sq)
 
-        (end_sq_file, end_sq_rank) = SquareHelper.sq_to_file_rank(end_sq)
-
-        adjacent_squares = [
-            SquareHelper.get_east_of(end_sq),           # 東
-            SquareHelper.get_north_east_of(end_sq),     # 北東
-            SquareHelper.get_north_of(end_sq),          # 北
-            SquareHelper.get_north_west_of(end_sq),     # 北西
-            SquareHelper.get_west_of(end_sq),           # 西
-            SquareHelper.get_south_west_of(end_sq),     # 南西
-            SquareHelper.get_south_of(end_sq),          # 南
-            SquareHelper.get_south_east_of(end_sq),     # 南東
-        ]
-
+        # 再帰ではなく、ループを使う
         # 幅優先探索
-        adjacent_squares_to_search = []
+        while 0 < len(adjacent_square_list):
+            #print(f"[search] 幅優先探索 {remaining_distance=}")
 
-        for adjacent_sq in adjacent_squares:
-            if adjacent_sq is not None:
+            # 次の次の探索先
+            two_adjacent_square_list = []
+
+            for adjacent_sq in adjacent_square_list:
+                #print(f"[search] {adjacent_sq=}")
+                if adjacent_sq is None:
+                    continue
+
                 if KingRouteSearch._then_process(route_board, control_board, occupied_board, adjacent_sq, remaining_distance):
-                    adjacent_squares_to_search.append(adjacent_sq)
+                    temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
+                    #print(f"[search] {temp_list=}")
+                    two_adjacent_square_list.extend(temp_list)
 
-        # 再帰
-        for adjacent_sq in adjacent_squares_to_search:
-            KingRouteSearch.search(route_board, control_board, occupied_board, friend_k_sq, adjacent_sq, remaining_distance + 1)
+            adjacent_square_list = two_adjacent_square_list
 
+            remaining_distance += 1
 
 
     def __init__(self, route_board, friend_k_sq, opponent_k_sq):
