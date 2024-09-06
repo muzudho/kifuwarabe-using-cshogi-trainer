@@ -72,7 +72,9 @@ class UsiEngine_0_2_5_0(UsiEngine):
                     # 自玉があるマスの番号
                     friend_k_sq=friend_k_sq,
                     # 敵玉があるマスの番号
-                    opponent_k_sq=BoardHelper.get_opponent_king_sq(self._board))
+                    opponent_k_sq=BoardHelper.get_opponent_king_sq(self._board),
+                    # 敵玉自身の利きは無視する
+                    without_opponet_king_control=True)
 
             # 玉の経路の次の移動先マス。無ければナン
             friend_k_next_sq = king_route_search.next_sq(friend_k_sq)

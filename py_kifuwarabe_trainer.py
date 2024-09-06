@@ -207,7 +207,7 @@ class SquareHelper():
 
 
     @staticmethod
-    def get_west_of(sq):
+    def get_east_of(sq):
         """東隣のマス番号を取得
 
         Returns
@@ -224,7 +224,7 @@ class SquareHelper():
 
 
     @staticmethod
-    def get_north_west_of(sq):
+    def get_north_east_of(sq):
         """東北隣のマス番号を取得
 
         Returns
