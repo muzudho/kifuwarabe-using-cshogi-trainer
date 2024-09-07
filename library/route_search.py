@@ -1,5 +1,5 @@
 import cshogi
-from py_kifuwarabe_trainer import SquareHelper
+from py_kifuwarabe_trainer import ColorHelper, SquareHelper, BoardHelper
 from library.shogi import FILE_LEN, RANK_LEN, BOARD_AREA, EAST, NORTH_EAST, NORTH_NORTH_EAST, NORTH, NORTH_WEST, NORTH_NORTH_WEST, WEST, SOUTH_WEST, SOUTH_SOUTH_WEST, SOUTH, SOUTH_EAST, SOUTH_SOUTH_EAST
 from library.engine_helper import LegalMovesHelper
 
@@ -333,291 +333,207 @@ class KingRouteSearch():
             (file, rank) = SquareHelper.sq_to_file_rank(sq)
             piece = board.piece(sq)
 
-            if board.turn == cshogi.BLACK:
-                # ▽歩の利き
-                if piece == cshogi.WPAWN:
-                    control_board[sq+SOUTH] += 1
+            opponent_color = ColorHelper.flip(board.turn)
 
-                # ▽香の利き
-                elif piece == cshogi.WLANCE:
-                    for delta in range(1, RANK_LEN - rank):
-                        control_rank = rank + delta
-                        control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
-                        control_board[control_sq] += 1
-                        if board.piece(control_sq) != 0:
-                            break
+            # 相手の歩の利き
+            if piece == BoardHelper.friend_pawn_from_black(opponent_color):
+                # 黒番から見て北に利きを１つ追加
+                control_board[BoardHelper.north_of_sq_from_black(opponent_color, sq)] += 1
 
-                # ▽桂の利き
-                elif piece == cshogi.WKNIGHT:
-                    # 南に行けるか？
-                    if rank + 2 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_SOUTH_WEST] += 1
-                        
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_SOUTH_EAST] += 1
+            # 相手の香の利き
+            elif piece == BoardHelper.friend_lance_from_black(opponent_color):
+                for delta in range(1, BoardHelper.rank_from_black(opponent_color, rank)):
+                    control_rank = rank - BoardHelper.positive_number_from_black(opponent_color, delta)
+                    control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
+                    control_board[control_sq] += 1
+                    if board.piece(control_sq) != 0:
+                        break
 
-                # ▽銀の利き
-                elif piece == cshogi.WSILVER:
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
-
-                        control_board[sq+SOUTH] += 1
-
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
-
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
-
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
-
-                # ▽金と杏圭全馬竜の利き
-                elif piece in [cshogi.WGOLD, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]:
-                    if file + 1 < FILE_LEN:
-                        control_board[sq+WEST] += 1
-
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
-                        
-                        control_board[sq+SOUTH] += 1
-
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
-
-                    if 0 < file - 1:
-                        control_board[sq+EAST] += 1
-
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        control_board[sq+NORTH] += 1
-
-                # ▽角の利き
-                elif piece == cshogi.WBISHOP:
-                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
-
-                # ▽飛の利き
-                elif piece == cshogi.WROOK:
-                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
-
-                # ▽玉の利き
-                elif piece == cshogi.WKING:
-                    if without_opponet_king_control:
-                        continue
-
-                    if file + 1 < FILE_LEN:
-                        control_board[sq+WEST] += 1
-
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
-
-                        control_board[sq+SOUTH] += 1
-
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
-
-                    if 0 < file - 1:
-                        control_board[sq+EAST] += 1
-
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
-    
-                        control_board[sq+NORTH] += 1
-
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
-
-                # ▽馬の利き
-                elif piece == cshogi.WPROM_BISHOP:
-                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
-
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
-
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
-
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
-    
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
-
-                # ▽竜の利き
-                elif piece == cshogi.WPROM_ROOK:
-                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
-
-                    if file + 1 < FILE_LEN:
-                        control_board[sq+WEST] += 1
-
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        control_board[sq+SOUTH] += 1
-
-                    if 0 < file - 1:
-                        control_board[sq+EAST] += 1
-
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        control_board[sq+NORTH] += 1
-
-            elif board.turn == cshogi.WHITE:
-                # ▲歩の利き
-                if piece == cshogi.BPAWN:
-                    control_board[sq+NORTH] += 1
-
-                # ▲香の利き
-                elif piece == cshogi.BLANCE:
-                    for delta in range(1, rank):
-                        control_rank = rank - delta
-                        control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
-                        control_board[control_sq] += 1
-                        if board.piece(control_sq) != 0:
-                            break
-
-                # ▲桂の利き
-                elif piece == cshogi.BKNIGHT:
-                    # 北に行けるか？
-                    if 0 < rank - 2:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_NORTH_EAST] += 1
-                        
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_NORTH_WEST] += 1
-
-                # ▲銀の利き
-                elif piece == cshogi.BSILVER:
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
-                        
-                        control_board[sq+NORTH] += 1
-
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
+            # 相手の桂の利き
+            elif piece == BoardHelper.friend_knight_from_black(opponent_color):
+                # 黒番から見て北北に行けるか？
+                if BoardHelper.can_it_go_north_north_from_black(opponent_color, rank):
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て北北東に利きを１つ追加
+                        control_board[BoardHelper.north_north_east_of_sq_from_black(opponent_color, sq)] += 1
                     
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て北北西に利きを１つ追加
+                        control_board[BoardHelper.north_north_west_of_sq_from_black(opponent_color, sq)] += 1
 
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
+            # 相手の銀の利き
+            elif piece == BoardHelper.friend_silver_from_black(opponent_color):
+                # 黒番から見て北に行けるか？
+                if BoardHelper.can_it_go_north_from_black(opponent_color, rank):
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て北東に利きを１つ追加
+                        control_board[BoardHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
 
-                # ▲金と杏圭全馬竜の利き
-                elif piece in [cshogi.BGOLD, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]:
-                    if 0 < file - 1:
-                        control_board[sq+EAST] += 1
+                    # 黒番から見て北に利きを１つ追加
+                    control_board[BoardHelper.north_of_sq_from_black(opponent_color, sq)] += 1
 
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
-                        
-                        control_board[sq+NORTH] += 1
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て北西に利きを１つ追加
+                        control_board[BoardHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
 
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
+                # 黒番から見て南に行けるか？
+                if BoardHelper.can_it_go_south_from_black(opponent_color, rank):
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て南西に利きを１つ追加
+                        control_board[BoardHelper.south_west_of_sq_from_black(opponent_color, sq)] += 1
 
-                    if file + 1 < FILE_LEN:
-                        control_board[sq+WEST] += 1
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て南東に利きを１つ追加
+                        control_board[BoardHelper.south_east_of_sq_from_black(opponent_color, sq)] += 1
 
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        control_board[sq+SOUTH] += 1
+            # 相手の金と杏圭全の利き
+            elif piece in [
+                BoardHelper.friend_gold_from_black(opponent_color),
+                BoardHelper.friend_prom_pawn_from_black(opponent_color),
+                BoardHelper.friend_prom_lance_from_black(opponent_color),
+                BoardHelper.friend_prom_knight_from_black(opponent_color),
+                BoardHelper.friend_prom_silver_from_black(opponent_color)]:
 
-                # ▲角の利き
-                elif piece == cshogi.BBISHOP:
-                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
+                # 黒番から見て東に行けるか？
+                if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                    # 黒番から見て東に利きを１つ追加
+                    control_board[BoardHelper.west_of_sq_from_black(opponent_color, sq)] += 1
 
-                # ▲飛の利き
-                elif piece == cshogi.BROOK:
-                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+                # 黒番から見て北に行けるか？
+                if BoardHelper.can_it_go_north_from_black(opponent_color, rank):
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て南西に利きを１つ追加
+                        control_board[BoardHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
 
-                # ▲玉の利き
-                elif piece == cshogi.BKING:
-                    if without_opponet_king_control:
-                        continue
+                    # 黒番から見て北に利きを１つ追加
+                    control_board[BoardHelper.north_of_sq_from_black(opponent_color, sq)] += 1
 
-                    if 0 < file - 1:
-                        control_board[sq+EAST] += 1
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て北西に利きを１つ追加
+                        control_board[BoardHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
 
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
-                        
-                        control_board[sq+NORTH] += 1
+                # 黒番から見て西に行けるか？
+                if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                    # 黒番から見て西に利きを１つ追加
+                    control_board[BoardHelper.west_of_sq_from_black(opponent_color, sq)] += 1
 
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
+                # 黒番から見て南に行けるか？
+                if BoardHelper.can_it_go_south_from_black(opponent_color, rank):
+                    # 黒番から見て南に利きを１つ追加
+                    control_board[BoardHelper.south_of_sq_from_black(opponent_color, sq)] += 1
 
-                    if file + 1 < FILE_LEN:
-                        control_board[sq+WEST] += 1
+            # 相手の角の利き
+            elif piece == BoardHelper.friend_bishop_from_black(opponent_color):
+                KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
 
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
-                        
-                        control_board[sq+SOUTH] += 1
+            # 相手の飛の利き
+            elif piece == BoardHelper.friend_rook_from_black(opponent_color):
+                KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
 
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
+            # 相手の玉の利き
+            elif piece == BoardHelper.friend_king_from_black(opponent_color):
+                if without_opponet_king_control:
+                    continue
 
-                # ▲馬の利き
-                elif piece == cshogi.BPROM_BISHOP:
-                    KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
+                # 黒番から見て東に行けるか？
+                if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                    # 黒番から見て東に利きを１つ追加
+                    control_board[BoardHelper.west_of_sq_from_black(opponent_color, sq)] += 1
 
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        if 0 < file - 1:
-                            control_board[sq+NORTH_EAST] += 1
+                # 黒番から見て北に行けるか？
+                if BoardHelper.can_it_go_north_from_black(opponent_color, rank):
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て南西に利きを１つ追加
+                        control_board[BoardHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
 
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+NORTH_WEST] += 1
+                    # 黒番から見て北に利きを１つ追加
+                    control_board[BoardHelper.north_of_sq_from_black(opponent_color, sq)] += 1
 
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        if file + 1 < FILE_LEN:
-                            control_board[sq+SOUTH_WEST] += 1
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て北西に利きを１つ追加
+                        control_board[BoardHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
 
-                        if 0 < file - 1:
-                            control_board[sq+SOUTH_EAST] += 1
+                # 黒番から見て西に行けるか？
+                if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                    # 黒番から見て西に利きを１つ追加
+                    control_board[BoardHelper.west_of_sq_from_black(opponent_color, sq)] += 1
 
-                # ▲竜の利き
-                elif piece == cshogi.BPROM_ROOK:
-                    KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+                # 黒番から見て南に行けるか？
+                if BoardHelper.can_it_go_south_from_black(opponent_color, rank):
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て南西に利きを１つ追加
+                        control_board[BoardHelper.south_west_of_sq_from_black(opponent_color, sq)] += 1
 
-                    if 0 < file - 1:
-                        control_board[sq+EAST] += 1
+                    # 黒番から見て南に利きを１つ追加
+                    control_board[BoardHelper.south_of_sq_from_black(opponent_color, sq)] += 1
 
-                    # 北に行けるか？
-                    if 0 < rank - 1:
-                        control_board[sq+NORTH] += 1
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て南東に利きを１つ追加
+                        control_board[BoardHelper.south_east_of_sq_from_black(opponent_color, sq)] += 1
 
-                    if file + 1 < FILE_LEN:
-                        control_board[sq+WEST] += 1
+            # 相手の馬の利き
+            elif piece == BoardHelper.friend_prom_bishop_from_black(opponent_color):
+                KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
 
-                    # 南に行けるか？
-                    if rank + 1 < RANK_LEN:
-                        control_board[sq+SOUTH] += 1
+                # 黒番から見て北に行けるか？
+                if BoardHelper.can_it_go_north_from_black(opponent_color, rank):
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て南西に利きを１つ追加
+                        control_board[BoardHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
+
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て北西に利きを１つ追加
+                        control_board[BoardHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
+
+                # 黒番から見て南に行けるか？
+                if BoardHelper.can_it_go_south_from_black(opponent_color, rank):
+                    # 黒番から見て西に行けるか？
+                    if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                        # 黒番から見て南西に利きを１つ追加
+                        control_board[BoardHelper.south_west_of_sq_from_black(opponent_color, sq)] += 1
+
+                    # 黒番から見て東に行けるか？
+                    if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                        # 黒番から見て南東に利きを１つ追加
+                        control_board[BoardHelper.south_east_of_sq_from_black(opponent_color, sq)] += 1
+
+            # 相手の竜の利き
+            elif piece == BoardHelper.friend_prom_rook_from_black(opponent_color):
+                KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+
+                # 黒番から見て東に行けるか？
+                if BoardHelper.can_it_go_east_from_black(opponent_color, file):
+                    # 黒番から見て東に利きを１つ追加
+                    control_board[BoardHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+
+                # 黒番から見て北に行けるか？
+                if BoardHelper.can_it_go_north_from_black(opponent_color, rank):
+                    # 黒番から見て北に利きを１つ追加
+                    control_board[BoardHelper.north_of_sq_from_black(opponent_color, sq)] += 1
+
+                # 黒番から見て西に行けるか？
+                if BoardHelper.can_it_go_west_from_black(opponent_color, file):
+                    # 黒番から見て西に利きを１つ追加
+                    control_board[BoardHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+
+                # 黒番から見て南に行けるか？
+                if BoardHelper.can_it_go_south_from_black(opponent_color, rank):
+                    # 黒番から見て南に利きを１つ追加
+                    control_board[BoardHelper.south_of_sq_from_black(opponent_color, sq)] += 1
 
 
         # def each_legal_move(move):

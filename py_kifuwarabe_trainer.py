@@ -1,7 +1,7 @@
 import cshogi
 import datetime
 import random
-from library.shogi import FILE_LEN, RANK_LEN
+from library.shogi import FILE_LEN, RANK_LEN, BOARD_AREA, EAST, NORTH_EAST, NORTH_NORTH_EAST, NORTH, NORTH_WEST, NORTH_NORTH_WEST, WEST, SOUTH_WEST, SOUTH_SOUTH_WEST, SOUTH, SOUTH_EAST, SOUTH_SOUTH_EAST
 
 
 class UsiEngine():
@@ -167,6 +167,22 @@ class UsiEngine():
             code: undo
         """
         self._board.pop()
+
+
+class ColorHelper():
+    """先手後手ヘルパー"""
+
+
+    @staticmethod
+    def flip(color):
+        if color == cshogi.BLACK:
+            return cshogi.WHITE
+        
+        if color == cshogi.WHITE:
+            return cshogi.BLACK
+
+        raise ValueError(f"{color=}")
+
 
 
 class SquareHelper():
@@ -405,6 +421,254 @@ class BoardHelper():
         (q_file, q_rank) = SquareHelper.sq_to_file_rank(q_sq)
 
         return abs(p_file -  q_file) + abs(p_rank - q_rank)
+
+
+    @staticmethod
+    def positive_number_from_black(color, value):
+        """黒番から見て、正の数"""
+        if color == cshogi.BLACK:
+            return value
+        return - value
+
+
+    @staticmethod
+    def rank_from_black(color, rank):
+        """黒番から見て、段"""
+        if color == cshogi.BLACK:
+            return rank
+        return RANK_LEN - rank
+
+
+    @staticmethod
+    def friend_pawn_from_black(color):
+        """黒番から見て、自駒の歩"""
+        if color == cshogi.BLACK:
+            return cshogi.BPAWN
+        return cshogi.WPAWN
+
+
+    @staticmethod
+    def friend_lance_from_black(color):
+        """黒番から見て、自駒の香"""
+        if color == cshogi.BLACK:
+            return cshogi.BLANCE
+        return cshogi.WLANCE
+
+
+    @staticmethod
+    def friend_knight_from_black(color):
+        """黒番から見て、自駒の桂"""
+        if color == cshogi.BLACK:
+            return cshogi.BKNIGHT
+        return cshogi.WKNIGHT
+
+
+    @staticmethod
+    def friend_silver_from_black(color):
+        """黒番から見て、自駒の銀"""
+        if color == cshogi.BLACK:
+            return cshogi.BSILVER
+        return cshogi.WSILVER
+
+
+    @staticmethod
+    def friend_gold_from_black(color):
+        """黒番から見て、自駒の金"""
+        if color == cshogi.BLACK:
+            return cshogi.BGOLD
+        return cshogi.WGOLD
+
+
+    @staticmethod
+    def friend_bishop_from_black(color):
+        """黒番から見て、自駒の角"""
+        if color == cshogi.BLACK:
+            return cshogi.BBISHOP
+        return cshogi.WBISHOP
+
+
+    @staticmethod
+    def friend_rook_from_black(color):
+        """黒番から見て、自駒の飛"""
+        if color == cshogi.BLACK:
+            return cshogi.BROOK
+        return cshogi.WROOK
+
+
+    @staticmethod
+    def friend_king_from_black(color):
+        """黒番から見て、自駒の玉"""
+        if color == cshogi.BLACK:
+            return cshogi.BKING
+        return cshogi.WKING
+
+
+    @staticmethod
+    def friend_prom_pawn_from_black(color):
+        """黒番から見て、自駒のと金"""
+        if color == cshogi.BLACK:
+            return cshogi.BPROM_PAWN
+        return cshogi.WPROM_PAWN
+
+
+    @staticmethod
+    def friend_prom_lance_from_black(color):
+        """黒番から見て、自駒の杏"""
+        if color == cshogi.BLACK:
+            return cshogi.BPROM_LANCE
+        return cshogi.WPROM_LANCE
+
+
+    @staticmethod
+    def friend_prom_knight_from_black(color):
+        """黒番から見て、自駒の圭"""
+        if color == cshogi.BLACK:
+            return cshogi.BPROM_KNIGHT
+        return cshogi.WPROM_KNIGHT
+
+
+    @staticmethod
+    def friend_prom_silver_from_black(color):
+        """黒番から見て、自駒の全"""
+        if color == cshogi.BLACK:
+            return cshogi.BPROM_SILVER
+        return cshogi.WPROM_SILVER
+
+
+    @staticmethod
+    def friend_prom_bishop_from_black(color):
+        """黒番から見て、自駒の馬"""
+        if color == cshogi.BLACK:
+            return cshogi.BPROM_BISHOP
+        return cshogi.WPROM_BISHOP
+
+
+    @staticmethod
+    def friend_prom_rook_from_black(color):
+        """黒番から見て、自駒の竜"""
+        if color == cshogi.BLACK:
+            return cshogi.BPROM_ROOK
+        return cshogi.WPROM_ROOK
+
+
+    @staticmethod
+    def east_of_sq_from_black(color, sq):
+        """黒番から見て、東隣"""
+        if color == cshogi.BLACK:
+            return sq+EAST
+        return sq+WEST
+
+
+    @staticmethod
+    def north_east_of_sq_from_black(color, sq):
+        """黒番から見て、北東隣"""
+        if color == cshogi.BLACK:
+            return sq+NORTH_EAST
+        return sq+SOUTH_WEST
+
+
+    @staticmethod
+    def north_north_east_of_sq_from_black(color, sq):
+        """黒番から見て、北北東隣"""
+        if color == cshogi.BLACK:
+            return sq+NORTH_NORTH_EAST
+        return sq+SOUTH_SOUTH_WEST
+
+
+    @staticmethod
+    def north_of_sq_from_black(color, sq):
+        """黒番から見て、北隣"""
+        if color == cshogi.BLACK:
+            return sq+NORTH
+        return sq+SOUTH
+
+
+    @staticmethod
+    def north_west_of_sq_from_black(color, sq):
+        """黒番から見て、北西隣"""
+        if color == cshogi.BLACK:
+            return sq+NORTH_WEST
+        return sq+SOUTH_EAST
+
+
+    @staticmethod
+    def north_north_west_of_sq_from_black(color, sq):
+        """黒番から見て、北北西隣"""
+        if color == cshogi.BLACK:
+            return sq+NORTH_NORTH_WEST
+        return sq+SOUTH_SOUTH_EAST
+
+
+    @staticmethod
+    def west_of_sq_from_black(color, sq):
+        """黒番から見て、西隣"""
+        if color == cshogi.BLACK:
+            return sq+WEST
+        return sq+EAST
+
+
+    @staticmethod
+    def south_west_of_sq_from_black(color, sq):
+        """黒番から見て、南西隣"""
+        if color == cshogi.BLACK:
+            return sq+SOUTH_WEST
+        return sq+NORTH_EAST
+
+
+    @staticmethod
+    def south_of_sq_from_black(color, sq):
+        """黒番から見て、南隣"""
+        if color == cshogi.BLACK:
+            return sq+SOUTH
+        return sq+NORTH
+
+
+    @staticmethod
+    def south_east_of_sq_from_black(color, sq):
+        """黒番から見て、南東隣"""
+        if color == cshogi.BLACK:
+            return sq+SOUTH_EAST
+        return sq+NORTH_WEST
+
+
+    @staticmethod
+    def can_it_go_east_from_black(color, file):
+        """黒番から見て、東に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 < file - 1
+        return file + 1 < FILE_LEN
+
+
+    @staticmethod
+    def can_it_go_north_from_black(color, rank):
+        """黒番から見て、北に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 < rank - 1
+        return rank + 1 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_north_north_from_black(color, rank):
+        """黒番から見て、北北に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 < rank - 2
+        return rank + 2 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_west_from_black(color, file):
+        """黒番から見て、西に行けるか？"""
+        if color == cshogi.BLACK:
+            return file + 1 < FILE_LEN
+        return 0 < file - 1
+
+
+    @staticmethod
+    def can_it_go_south_from_black(color, rank):
+        """黒番から見て、南に行けるか？"""
+        if color == cshogi.BLACK:
+            return rank + 1 < RANK_LEN
+        return 0 < rank - 1
 
 
 class UsiSquareHelper():
