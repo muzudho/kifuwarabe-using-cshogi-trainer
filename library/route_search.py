@@ -4,42 +4,8 @@ from library.shogi import FILE_LEN, RANK_LEN, BOARD_AREA, EAST, NORTH_EAST, NORT
 from library.engine_helper import LegalMovesHelper
 
 
-class KingRouteSearch():
-    """玉の経路探索
-    
-    玉は８方向に移動できます。
-    これを使って、盤上の利きの無いところは移動できると仮定し、
-    その盤上で自玉と相手玉の最短経路を探索します
-    """
-
-
-    # 目的地に到達できない距離の印
-    _INFINITE = 99
-
-
-    @staticmethod
-    def _search_process(route_board, control_board, occupied_board, adjacent_of_end_sq, remaining_distance):
-        if route_board[adjacent_of_end_sq] == KingRouteSearch._INFINITE and control_board[adjacent_of_end_sq] == 0 and occupied_board[adjacent_of_end_sq] == 0:
-            # 経路を記入
-            route_board[adjacent_of_end_sq] = remaining_distance
-
-            # 繰り返しを指示
-            return True
-
-        return False
-
-
-    @staticmethod
-    def _choice_process(route_board, adjacent_of_end_sq, remaining_distance):
-        # 印が付いているところを、戻っていく
-        if route_board[adjacent_of_end_sq] == remaining_distance:
-            # 経路を記入
-            route_board[adjacent_of_end_sq] = abs(remaining_distance)
-
-            # 繰り返しを指示
-            return True
-
-        return False
+class RouteSearchSub():
+    """経路探索サブクラス"""
 
 
     @staticmethod
@@ -63,138 +29,29 @@ class KingRouteSearch():
 
 
     @staticmethod
-    def search(route_board, control_board, occupied_board, friend_k_sq, end_sq, remaining_distance=0):
-        """end_sq から friend_k_sq に向かって経路を伸ばします
+    def add_occupied_pieces(board, occupied_board, occupied_without_king):
+        """全てのマスの自駒の有無を設定
 
         Parameters
         ----------
-        route_board : list
-            経路の記憶
-        control_board : list
-            敵駒の利きの数
+        board : cshogi.Board
+            盤
         occupied_board : list
-            自駒の有無
-        remaining_distance : int
-            玉の残り最短移動回数
+            自駒の有無盤
+        occupied_without_king : bool
+            両玉除く
         """
+        for sq in range(0, BOARD_AREA):
+            (file, rank) = SquareHelper.sq_to_file_rank(sq)
+            piece = board.piece(sq)
 
-        #
-        # DO start から end へ向かって事前探索を行う（候補挙げの探索）。 0 から -1,-2 と降順に負数を入れていく
-        #
+            if (board.turn == cshogi.BLACK and piece in [cshogi.BPAWN, cshogi.BLANCE, cshogi.BKNIGHT, cshogi.BSILVER, cshogi.BGOLD, cshogi.BBISHOP, cshogi.BROOK, cshogi.BKING, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]) or\
+                (board.turn == cshogi.WHITE and piece in [cshogi.WPAWN, cshogi.WLANCE, cshogi.WKNIGHT, cshogi.WSILVER, cshogi.WGOLD, cshogi.WBISHOP, cshogi.WROOK, cshogi.WKING, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]):
 
-        is_searched = False
+                if occupied_without_king and piece in [cshogi.BKING, cshogi.WKING]:
+                    continue
 
-        route_board[friend_k_sq] = 0
-
-        # 今の隣
-        adjacent_square_list = KingRouteSearch.create_adjacent_squares(friend_k_sq)
-
-        # 再帰ではなく、ループを使う
-        # 幅優先探索
-        while 0 < len(adjacent_square_list):
-            # 次の次の探索先
-            two_adjacent_square_list = []
-
-            for adjacent_sq in adjacent_square_list:
-                if KingRouteSearch._search_process(route_board, control_board, occupied_board, adjacent_sq, remaining_distance - 1):
-                    temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
-                    two_adjacent_square_list.extend(temp_list)
-
-                # ゴールに至った
-                if adjacent_sq == end_sq:
-                    print(f"[search] ゴールに至った {adjacent_sq=} {len(adjacent_square_list)=}")
-                    is_searched = True
-                    break
-
-            adjacent_square_list = two_adjacent_square_list
-
-            remaining_distance -= 1
-
-            if is_searched:
-                break
-
-#         # 経路盤（往路）について
-#         print(f"""\
-# ROUTE BOARD OUTWARD
-# -------------------""")
-#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-#                 sq = SquareHelper.file_rank_to_sq(file, rank)
-#                 print(f"{route_board[sq]:3} ", end='')
-#             print() # 改行
-#         print(f"""\
-# -------------------""")
-
-        # ゴールに至らないことが分かった時
-        if not is_searched:
-            print("[search] ゴールに至らないことが分かった時")
-            return False
-
-        # DO end に到達した地点で事前探索終了。何回で到達するか数字が分かる
-        max_count = abs(remaining_distance)
-        #print(f"[search] 復路  {max_count=}  {remaining_distance=}  {len(adjacent_square_list)=}")
-
-        route_board[end_sq] = max_count
-        #print(f"[search] ゴール route_board[{end_sq=}] を {max_count=} にする")
-
-        # 今の隣
-        adjacent_square_list = KingRouteSearch.create_adjacent_squares(end_sq)
-
-        # 経路盤（往路）について
-#         print(f"""\
-# ROUTE BOARD 終着点をMAX値にする
-# -------------------""")
-#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-#                 sq = SquareHelper.file_rank_to_sq(file, rank)
-#                 print(f"{route_board[sq]:3} ", end='')
-#             print() # 改行
-#         print(f"""\
-# -------------------""")
-
-        #
-        # DO end から start へ逆順に探索。この探索が本番の探索（確定の探索）。ルート盤のマスの負数を絶対値にしていくとちょうど昇順の正の数になっていく
-        #
-
-        is_searched = False
-
-        # 再帰ではなく、ループを使う
-        # 幅優先探索
-        while 0 < len(adjacent_square_list):
-            # 次の次の探索先
-            two_adjacent_square_list = []
-
-            for adjacent_sq in adjacent_square_list:
-                if KingRouteSearch._choice_process(route_board, adjacent_sq, remaining_distance + 1):
-                    temp_list = KingRouteSearch.create_adjacent_squares(adjacent_sq)
-                    two_adjacent_square_list.extend(temp_list)
-
-            adjacent_square_list = two_adjacent_square_list
-
-            # 負数が０に戻っていく
-            remaining_distance += 1
-
-        return True
-
-
-    def __init__(self, route_board, friend_k_sq, opponent_k_sq):
-        """初期化
-        
-        Parameters
-        ----------
-        route_board : list
-            盤上の経路
-            敵玉への残り最短移動回数
-            到達できない場合は 99 でも入れておく
-        friend_k_sq : int
-            自玉のあるマス番号
-        opponent_k_sq : int
-            敵玉のあるマス番号
-        """
-
-        self._friend_k_sq = friend_k_sq
-        self._opponent_k_sq = opponent_k_sq
-        self._route_board = route_board
+                occupied_board[sq] += 1
 
 
     @staticmethod
@@ -300,33 +157,14 @@ class KingRouteSearch():
 
 
     @staticmethod
-    def new_obj(
-            board,
-            friend_k_sq,
-            opponent_k_sq,
-            without_opponet_king_control=False):
-
-        route_board = [KingRouteSearch._INFINITE] * BOARD_AREA
-
-        # マスに利いている利きの数
-        control_board = [0] * BOARD_AREA
-
-        # 自駒の有無
-        occupied_board = [0] * BOARD_AREA
-
-        # 全てのマスの自駒について
-        occupied_without_king = True    # 両玉除く
-        for sq in range(0, BOARD_AREA):
-            (file, rank) = SquareHelper.sq_to_file_rank(sq)
-            piece = board.piece(sq)
-
-            if (board.turn == cshogi.BLACK and piece in [cshogi.BPAWN, cshogi.BLANCE, cshogi.BKNIGHT, cshogi.BSILVER, cshogi.BGOLD, cshogi.BBISHOP, cshogi.BROOK, cshogi.BKING, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]) or\
-                (board.turn == cshogi.WHITE and piece in [cshogi.WPAWN, cshogi.WLANCE, cshogi.WKNIGHT, cshogi.WSILVER, cshogi.WGOLD, cshogi.WBISHOP, cshogi.WROOK, cshogi.WKING, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]):
-
-                if occupied_without_king and piece in [cshogi.BKING, cshogi.WKING]:
-                    continue
-
-                occupied_board[sq] += 1
+    def add_opponent_control(board, control_board, without_opponet_king_control):
+        """相手の駒の利きを、利き盤に加算します
+        
+        Parameters
+        ----------
+        without_opponet_king_control : bool
+            相手玉の利きは除く
+        """
 
         # 全てのマスの駒について
         for sq in range(0, BOARD_AREA):
@@ -432,11 +270,11 @@ class KingRouteSearch():
 
             # 相手の角の利き
             elif piece == BoardHelper.friend_bishop_from_black(opponent_color):
-                KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
+                RouteSearchSub.append_control_of_bishop(board, control_board, file, rank)
 
             # 相手の飛の利き
             elif piece == BoardHelper.friend_rook_from_black(opponent_color):
-                KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+                RouteSearchSub.append_control_of_rook(board, control_board, file, rank)
 
             # 相手の玉の利き
             elif piece == BoardHelper.friend_king_from_black(opponent_color):
@@ -485,7 +323,7 @@ class KingRouteSearch():
 
             # 相手の馬の利き
             elif piece == BoardHelper.friend_prom_bishop_from_black(opponent_color):
-                KingRouteSearch.append_control_of_bishop(board, control_board, file, rank)
+                RouteSearchSub.append_control_of_bishop(board, control_board, file, rank)
 
                 # 黒番から見て北に行けるか？
                 if BoardHelper.can_it_go_north_from_black(opponent_color, rank):
@@ -513,7 +351,7 @@ class KingRouteSearch():
 
             # 相手の竜の利き
             elif piece == BoardHelper.friend_prom_rook_from_black(opponent_color):
-                KingRouteSearch.append_control_of_rook(board, control_board, file, rank)
+                RouteSearchSub.append_control_of_rook(board, control_board, file, rank)
 
                 # 黒番から見て東に行けるか？
                 if BoardHelper.can_it_go_east_from_black(opponent_color, file):
@@ -534,6 +372,210 @@ class KingRouteSearch():
                 if BoardHelper.can_it_go_south_from_black(opponent_color, rank):
                     # 黒番から見て南に利きを１つ追加
                     control_board[BoardHelper.south_of_sq_from_black(opponent_color, sq)] += 1
+
+
+class KingRouteSearch():
+    """玉の経路探索
+    
+    玉は８方向に移動できます。
+    これを使って、盤上の利きの無いところは移動できると仮定し、
+    その盤上で自玉と相手玉の最短経路を探索します
+    """
+
+
+    # 目的地に到達できない距離の印
+    _INFINITE = 99
+
+
+    @staticmethod
+    def _search_outward(route_board, control_board, occupied_board, adjacent_of_end_sq, remaining_distance):
+        if route_board[adjacent_of_end_sq] == KingRouteSearch._INFINITE and control_board[adjacent_of_end_sq] == 0 and occupied_board[adjacent_of_end_sq] == 0:
+            # 経路を記入
+            route_board[adjacent_of_end_sq] = remaining_distance
+
+            # 繰り返しを指示
+            return True
+
+        return False
+
+
+    @staticmethod
+    def _search_return(route_board, adjacent_of_end_sq, remaining_distance):
+        # 印が付いているところを、戻っていく
+        if route_board[adjacent_of_end_sq] == remaining_distance:
+            # 経路を記入
+            route_board[adjacent_of_end_sq] = abs(remaining_distance)
+
+            # 繰り返しを指示
+            return True
+
+        return False
+
+
+    @staticmethod
+    def search(route_board, control_board, occupied_board, friend_k_sq, end_sq, remaining_distance=0):
+        """end_sq から friend_k_sq に向かって経路を伸ばします
+
+        Parameters
+        ----------
+        route_board : list
+            経路の記憶
+        control_board : list
+            敵駒の利きの数
+        occupied_board : list
+            自駒の有無
+        remaining_distance : int
+            玉の残り最短移動回数
+        """
+
+        #
+        # DO start から end へ向かって事前探索を行う（候補挙げの探索）。 0 から -1,-2 と降順に負数を入れていく
+        #
+
+        is_searched = False
+
+        route_board[friend_k_sq] = 0
+
+        # 今の隣
+        adjacent_square_list = RouteSearchSub.create_adjacent_squares(friend_k_sq)
+
+        # 再帰ではなく、ループを使う
+        # 幅優先探索
+        while 0 < len(adjacent_square_list):
+            # 次の次の探索先
+            two_adjacent_square_list = []
+
+            for adjacent_sq in adjacent_square_list:
+                if KingRouteSearch._search_outward(route_board, control_board, occupied_board, adjacent_sq, remaining_distance - 1):
+                    temp_list = RouteSearchSub.create_adjacent_squares(adjacent_sq)
+                    two_adjacent_square_list.extend(temp_list)
+
+                # ゴールに至った
+                if adjacent_sq == end_sq:
+                    print(f"[search] ゴールに至った {adjacent_sq=} {len(adjacent_square_list)=}")
+                    is_searched = True
+                    break
+
+            adjacent_square_list = two_adjacent_square_list
+
+            remaining_distance -= 1
+
+            if is_searched:
+                break
+
+#         # 経路盤（往路）について
+#         print(f"""\
+# ROUTE BOARD OUTWARD
+# -------------------""")
+#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+#                 sq = SquareHelper.file_rank_to_sq(file, rank)
+#                 print(f"{route_board[sq]:3} ", end='')
+#             print() # 改行
+#         print(f"""\
+# -------------------""")
+
+        # ゴールに至らないことが分かった時
+        if not is_searched:
+            print("[search] ゴールに至らないことが分かった時")
+            return False
+
+        # DO end に到達した地点で事前探索終了。何回で到達するか数字が分かる
+        max_count = abs(remaining_distance)
+        #print(f"[search] 復路  {max_count=}  {remaining_distance=}  {len(adjacent_square_list)=}")
+
+        route_board[end_sq] = max_count
+        #print(f"[search] ゴール route_board[{end_sq=}] を {max_count=} にする")
+
+        # 今の隣
+        adjacent_square_list = RouteSearchSub.create_adjacent_squares(end_sq)
+
+        # 経路盤（往路）について
+#         print(f"""\
+# ROUTE BOARD 終着点をMAX値にする
+# -------------------""")
+#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+#                 sq = SquareHelper.file_rank_to_sq(file, rank)
+#                 print(f"{route_board[sq]:3} ", end='')
+#             print() # 改行
+#         print(f"""\
+# -------------------""")
+
+        #
+        # DO end から start へ逆順に探索。この探索が本番の探索（確定の探索）。ルート盤のマスの負数を絶対値にしていくとちょうど昇順の正の数になっていく
+        #
+
+        is_searched = False
+
+        # 再帰ではなく、ループを使う
+        # 幅優先探索
+        while 0 < len(adjacent_square_list):
+            # 次の次の探索先
+            two_adjacent_square_list = []
+
+            for adjacent_sq in adjacent_square_list:
+                if KingRouteSearch._search_return(route_board, adjacent_sq, remaining_distance + 1):
+                    temp_list = RouteSearchSub.create_adjacent_squares(adjacent_sq)
+                    two_adjacent_square_list.extend(temp_list)
+
+            adjacent_square_list = two_adjacent_square_list
+
+            # 負数が０に戻っていく
+            remaining_distance += 1
+
+        return True
+
+
+    def __init__(self, route_board, friend_k_sq, opponent_k_sq):
+        """初期化
+        
+        Parameters
+        ----------
+        route_board : list
+            盤上の経路
+            敵玉への残り最短移動回数
+            到達できない場合は 99 でも入れておく
+        friend_k_sq : int
+            自玉のあるマス番号
+        opponent_k_sq : int
+            敵玉のあるマス番号
+        """
+
+        self._friend_k_sq = friend_k_sq
+        self._opponent_k_sq = opponent_k_sq
+        self._route_board = route_board
+
+
+    @staticmethod
+    def new_obj(
+            board,
+            friend_k_sq,
+            opponent_k_sq,
+            without_opponet_king_control=False):
+        """
+        Parameters
+        ----------
+        without_opponet_king_control : bool
+            相手玉の利きは除く
+        """
+
+        route_board = [KingRouteSearch._INFINITE] * BOARD_AREA
+
+        # マスに利いている利きの数
+        control_board = [0] * BOARD_AREA
+
+        # 自駒の有無
+        occupied_board = [0] * BOARD_AREA
+
+        # 全てのマスの自駒の有無を設定
+        RouteSearchSub.add_occupied_pieces(
+            board,
+            occupied_board,
+            occupied_without_king=True) # 両玉除く
+
+        # 相手の駒の利きを、利き盤に加算します
+        RouteSearchSub.add_opponent_control(board, control_board, without_opponet_king_control)
 
 
         # def each_legal_move(move):
@@ -600,7 +642,7 @@ ROUTE BOARD RETURN
 
 
         # ８方向のどこかに、移動回数が１小さいマスがある
-        for adjacent_sq in KingRouteSearch.create_adjacent_squares(sq):
+        for adjacent_sq in RouteSearchSub.create_adjacent_squares(sq):
             if self._route_board[adjacent_sq] == next_distance:
                 return adjacent_sq
 
