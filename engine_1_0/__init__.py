@@ -2,7 +2,7 @@ import cshogi
 import datetime
 import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper
-from library.route_search import KingRouteSearch
+from library.route_search import MovementOfKing, KingRouteSearch
 
 
 _engine_file_path = "engine_1_0/engine_name.txt"
@@ -68,16 +68,16 @@ class UsiEngine_1_0(UsiEngine):
             # 玉の経路探索開始
             king_route_search = KingRouteSearch.new_obj(
                     board=self._board,
-                    # 自玉があるマスの番号
-                    friend_k_sq=BoardHelper.get_friend_king_sq(self._board),
-                    # 敵玉があるマスの番号
-                    opponent_k_sq=BoardHelper.get_opponent_king_sq(self._board),
+                    # 開始地点のマス番号
+                    start_sq=BoardHelper.get_friend_king_sq(self._board),
+                    # 目的地のマス番号
+                    goal_sq=BoardHelper.get_opponent_king_sq(self._board),
                     # 敵玉自身の利きは無視する
                     without_opponet_king_control=True)
 
             # 玉の経路の次の移動先マス。無ければナン
-            friend_k_next_sq = king_route_search.next_sq(king_route_search.friend_k_sq)
-            print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_k_next_sq=}  {king_route_search.friend_k_sq=}")
+            friend_k_next_sq = king_route_search.next_sq(MovementOfKing(), king_route_search.start_sq)
+            print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_k_next_sq=}  {king_route_search.start_sq=}")
 
 
             # 相手玉と、進んだ駒の距離が最小の手を指す。
@@ -97,7 +97,7 @@ class UsiEngine_1_0(UsiEngine):
                 move = UsiMoveHelper.code_to_move(move_u)
 
                 # 自玉が移動した場合、敵玉へ近づく最短経路を調べるアルゴリズムがあるので、それを使う
-                if move.src_sq == king_route_search.friend_k_sq:
+                if move.src_sq == king_route_search.start_sq:
 
                     # 自玉が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
                     if friend_k_next_sq is not None and move.dst_sq == friend_k_next_sq:
@@ -109,7 +109,7 @@ class UsiEngine_1_0(UsiEngine):
                         continue
 
                 # 敵玉とのマンハッタン距離
-                d = BoardHelper.get_manhattan_distance(king_route_search.opponent_k_sq, move.dst_sq)
+                d = BoardHelper.get_manhattan_distance(king_route_search.goal_sq, move.dst_sq)
 
                 if d < nearest_distance:
                     nearest_distance = d
