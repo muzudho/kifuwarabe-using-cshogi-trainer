@@ -223,124 +223,282 @@ class SquareHelper():
 
 
     @staticmethod
-    def get_east_of(sq):
-        """東隣のマス番号を取得
+    def can_it_go_east_from_black(color, file):
+        """黒番から見て、東に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 <= file - 1
+        return file + 1 < FILE_LEN
+
+
+    @staticmethod
+    def can_it_go_north_east_from_black(color, file, rank):
+        """黒番から見て、北東に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 <= file - 1 and 0 <= rank - 1
+        return file + 1 < FILE_LEN and rank + 1 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_north_north_east_from_black(color, file, rank):
+        """黒番から見て、北北東に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 <= file - 1 and 0 <= rank - 2
+        return file + 1 < FILE_LEN and rank + 2 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_north_from_black(color, rank):
+        """黒番から見て、北に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 <= rank - 1
+        return rank + 1 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_north_north_from_black(color, rank):
+        """黒番から見て、北北に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 <= rank - 2
+        return rank + 2 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_north_north_west_from_black(color, file, rank):
+        """黒番から見て、北北西に行けるか？"""
+        if color == cshogi.BLACK:
+            return file + 1 < FILE_LEN and 0 <= rank - 2
+        return 0 <= file - 1 and rank + 2 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_north_west_from_black(color, file, rank):
+        """黒番から見て、北西に行けるか？"""
+        if color == cshogi.BLACK:
+            return file + 1 < FILE_LEN and 0 <= rank - 1
+        return 0 <= file - 1 and rank + 1 < RANK_LEN
+
+
+    @staticmethod
+    def can_it_go_west_from_black(color, file):
+        """黒番から見て、西に行けるか？"""
+        if color == cshogi.BLACK:
+            return file + 1 < FILE_LEN
+        return 0 <= file - 1
+
+
+    @staticmethod
+    def can_it_go_south_west_from_black(color, file, rank):
+        """黒番から見て、南西に行けるか？"""
+        if color == cshogi.BLACK:
+            return file + 1 < FILE_LEN and rank + 1 < RANK_LEN
+        return 0 <= file - 1 and 0 <= rank - 1
+
+
+    @staticmethod
+    def can_it_go_south_from_black(color, rank):
+        """黒番から見て、南に行けるか？"""
+        if color == cshogi.BLACK:
+            return rank + 1 < RANK_LEN
+        return 0 <= rank - 1
+
+
+    @staticmethod
+    def can_it_go_south_east_from_black(color, file, rank):
+        """黒番から見て、南東に行けるか？"""
+        if color == cshogi.BLACK:
+            return 0 <= file - 1 and rank + 1 < RANK_LEN
+        return file + 1 < FILE_LEN and 0 <= rank - 1
+
+
+    @staticmethod
+    def east_of_sq_from_black(color, sq):
+        """黒番から見て、東隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if 0 < file:
-            return SquareHelper.file_rank_to_sq(file-1, rank)
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_east_from_black(color, file):
+                return sq+EAST
+            return None
         
+        if SquareHelper.can_it_go_east_from_black(color, file):
+            return sq+WEST
         return None
 
 
     @staticmethod
-    def get_north_east_of(sq):
-        """東北隣のマス番号を取得
+    def north_east_of_sq_from_black(color, sq):
+        """黒番から見て、北東隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if 0 < file and 0 < rank:
-            return SquareHelper.file_rank_to_sq(file-1, rank-1)
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_north_east_from_black(color, file=file, rank=rank):
+                return sq+NORTH_EAST
+            return None
         
+        if SquareHelper.can_it_go_north_east_from_black(color, file=file, rank=rank):
+            return sq+SOUTH_WEST
         return None
 
 
     @staticmethod
-    def get_north_of(sq):
-        """北隣のマス番号を取得
+    def north_north_east_of_sq_from_black(color, sq):
+        """黒番から見て、北北東隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if 0 < rank:
-            return SquareHelper.file_rank_to_sq(file, rank-1)
-        
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_north_north_east_from_black(color, file=file, rank=rank):
+                return sq+NORTH_NORTH_EAST
+            return None
+
+        if SquareHelper.can_it_go_north_north_east_from_black(color, file=file, rank=rank):
+            return sq+SOUTH_SOUTH_WEST
         return None
 
 
     @staticmethod
-    def get_north_west_of(sq):
-        """北西隣のマス番号を取得
+    def north_of_sq_from_black(color, sq):
+        """黒番から見て、北隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if file + 1 < FILE_LEN and 0 < rank:
-            return SquareHelper.file_rank_to_sq(file+1, rank-1)
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_north_from_black(color, rank=rank):
+                return sq+NORTH
+            return None
         
+        if SquareHelper.can_it_go_north_from_black(color, rank=rank):
+            return sq+SOUTH
         return None
 
 
     @staticmethod
-    def get_west_of(sq):
-        """西隣のマス番号を取得
+    def north_north_west_of_sq_from_black(color, sq):
+        """黒番から見て、北北西隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if file + 1 < FILE_LEN:
-            return SquareHelper.file_rank_to_sq(file+1, rank)
-        
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_north_north_west_from_black(color, file=file, rank=rank):
+                return sq+NORTH_NORTH_WEST
+            return None
+
+        if SquareHelper.can_it_go_north_north_west_from_black(color, file=file, rank=rank):
+            return sq+SOUTH_SOUTH_EAST
         return None
 
 
     @staticmethod
-    def get_south_west_of(sq):
-        """南西隣のマス番号を取得
+    def north_west_of_sq_from_black(color, sq):
+        """黒番から見て、北西隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if file + 1 < FILE_LEN and rank + 1 < RANK_LEN:
-            return SquareHelper.file_rank_to_sq(file+1, rank+1)
-        
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_north_west_from_black(color, file=file, rank=rank):
+                return sq+NORTH_WEST
+            return None
+
+        if SquareHelper.can_it_go_north_west_from_black(color, file=file, rank=rank):
+            return sq+SOUTH_EAST
         return None
 
 
     @staticmethod
-    def get_south_of(sq):
-        """南隣のマス番号を取得
+    def west_of_sq_from_black(color, sq):
+        """黒番から見て、西隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if rank + 1 < RANK_LEN:
-            return SquareHelper.file_rank_to_sq(file, rank + 1)
-        
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_west_from_black(color, file=file):
+                return sq+WEST
+            return None
+
+        if SquareHelper.can_it_go_west_from_black(color, file=file):
+            return sq+EAST
         return None
 
 
     @staticmethod
-    def get_south_east_of(sq):
-        """南東隣のマス番号を取得
+    def south_west_of_sq_from_black(color, sq):
+        """TODO 黒番から見て、南西隣のマス番号を取得
 
         Returns
         -------
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if 0 < file and rank + 1 < RANK_LEN:
-            return SquareHelper.file_rank_to_sq(file - 1, rank + 1)
-        
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_south_west_from_black(color, file=file, rank=rank):
+                return sq+SOUTH_WEST
+            return None
+
+        if SquareHelper.can_it_go_south_west_from_black(color, file=file, rank=rank):
+            return sq+NORTH_EAST
         return None
 
+
+    @staticmethod
+    def south_of_sq_from_black(color, sq):
+        """黒番から見て、南隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        if color == cshogi.BLACK:
+            if SquareHelper.can_it_go_south_from_black(color, rank=rank):
+                return sq+SOUTH
+            return None
+        
+        if SquareHelper.can_it_go_south_from_black(color, rank=rank):
+            return sq+NORTH
+        return None
+
+
+    @staticmethod
+    def south_east_of_sq_from_black(color, sq):
+        """黒番から見て、南東隣のマス番号を取得
+
+        Returns
+        -------
+        マス番号。該当なしならナン
+        """
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)
+        if color == cshogi.BLACK:
+            (file, rank) = SquareHelper.sq_to_file_rank(sq)
+            if SquareHelper.can_it_go_south_east_from_black(color, file=file, rank=rank):
+                return sq+SOUTH_EAST
+            return None
+        
+        if SquareHelper.can_it_go_south_east_from_black(color, file=file, rank=rank):
+            return sq+NORTH_WEST
+        return None
 
 
 class Move():
@@ -549,126 +707,6 @@ class BoardHelper():
         if color == cshogi.BLACK:
             return cshogi.BPROM_ROOK
         return cshogi.WPROM_ROOK
-
-
-    @staticmethod
-    def east_of_sq_from_black(color, sq):
-        """黒番から見て、東隣"""
-        if color == cshogi.BLACK:
-            return sq+EAST
-        return sq+WEST
-
-
-    @staticmethod
-    def north_east_of_sq_from_black(color, sq):
-        """黒番から見て、北東隣"""
-        if color == cshogi.BLACK:
-            return sq+NORTH_EAST
-        return sq+SOUTH_WEST
-
-
-    @staticmethod
-    def north_north_east_of_sq_from_black(color, sq):
-        """黒番から見て、北北東隣"""
-        if color == cshogi.BLACK:
-            return sq+NORTH_NORTH_EAST
-        return sq+SOUTH_SOUTH_WEST
-
-
-    @staticmethod
-    def north_of_sq_from_black(color, sq):
-        """黒番から見て、北隣"""
-        if color == cshogi.BLACK:
-            return sq+NORTH
-        return sq+SOUTH
-
-
-    @staticmethod
-    def north_west_of_sq_from_black(color, sq):
-        """黒番から見て、北西隣"""
-        if color == cshogi.BLACK:
-            return sq+NORTH_WEST
-        return sq+SOUTH_EAST
-
-
-    @staticmethod
-    def north_north_west_of_sq_from_black(color, sq):
-        """黒番から見て、北北西隣"""
-        if color == cshogi.BLACK:
-            return sq+NORTH_NORTH_WEST
-        return sq+SOUTH_SOUTH_EAST
-
-
-    @staticmethod
-    def west_of_sq_from_black(color, sq):
-        """黒番から見て、西隣"""
-        if color == cshogi.BLACK:
-            return sq+WEST
-        return sq+EAST
-
-
-    @staticmethod
-    def south_west_of_sq_from_black(color, sq):
-        """黒番から見て、南西隣"""
-        if color == cshogi.BLACK:
-            return sq+SOUTH_WEST
-        return sq+NORTH_EAST
-
-
-    @staticmethod
-    def south_of_sq_from_black(color, sq):
-        """黒番から見て、南隣"""
-        if color == cshogi.BLACK:
-            return sq+SOUTH
-        return sq+NORTH
-
-
-    @staticmethod
-    def south_east_of_sq_from_black(color, sq):
-        """黒番から見て、南東隣"""
-        if color == cshogi.BLACK:
-            return sq+SOUTH_EAST
-        return sq+NORTH_WEST
-
-
-    @staticmethod
-    def can_it_go_east_from_black(color, file):
-        """黒番から見て、東に行けるか？"""
-        if color == cshogi.BLACK:
-            return 0 < file - 1
-        return file + 1 < FILE_LEN
-
-
-    @staticmethod
-    def can_it_go_north_from_black(color, rank):
-        """黒番から見て、北に行けるか？"""
-        if color == cshogi.BLACK:
-            return 0 < rank - 1
-        return rank + 1 < RANK_LEN
-
-
-    @staticmethod
-    def can_it_go_north_north_from_black(color, rank):
-        """黒番から見て、北北に行けるか？"""
-        if color == cshogi.BLACK:
-            return 0 < rank - 2
-        return rank + 2 < RANK_LEN
-
-
-    @staticmethod
-    def can_it_go_west_from_black(color, file):
-        """黒番から見て、西に行けるか？"""
-        if color == cshogi.BLACK:
-            return file + 1 < FILE_LEN
-        return 0 < file - 1
-
-
-    @staticmethod
-    def can_it_go_south_from_black(color, rank):
-        """黒番から見て、南に行けるか？"""
-        if color == cshogi.BLACK:
-            return rank + 1 < RANK_LEN
-        return 0 < rank - 1
 
 
 class UsiSquareHelper():

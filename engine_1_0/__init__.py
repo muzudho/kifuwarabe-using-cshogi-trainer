@@ -2,7 +2,7 @@ import cshogi
 import datetime
 import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper
-from library.route_search import MovementOfKing, KingRouteSearch
+from library.route_search import MovementOfKing, RouteSearch
 
 
 _engine_file_path = "engine_1_0/engine_name.txt"
@@ -66,7 +66,7 @@ class UsiEngine_1_0(UsiEngine):
             is_nearest_route = False
 
             # 玉の経路探索開始
-            king_route_search = KingRouteSearch.new_obj(
+            king_route_search = RouteSearch.new_obj(
                     board=self._board,
                     # 開始地点のマス番号
                     start_sq=BoardHelper.get_friend_king_sq(self._board),
@@ -76,7 +76,7 @@ class UsiEngine_1_0(UsiEngine):
                     without_opponet_king_control=True)
 
             # 玉の経路の次の移動先マス。無ければナン
-            friend_k_next_sq = king_route_search.next_sq(MovementOfKing(), king_route_search.start_sq)
+            friend_k_next_sq = king_route_search.next_sq(MovementOfKing(self._board.turn), king_route_search.start_sq)
             print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_k_next_sq=}  {king_route_search.start_sq=}")
 
 
