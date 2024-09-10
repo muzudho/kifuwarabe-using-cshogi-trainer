@@ -1,5 +1,6 @@
 # python main.py 1.0
 import sys
+import traceback
 from engine_0_2_5_0 import UsiEngine_0_2_5_0
 from engine_0_5_0 import UsiEngine_0_5_0
 from engine_1_0 import UsiEngine_1_0
@@ -35,4 +36,8 @@ if __name__ == '__main__':
 
     except Exception as err:
         print(f"[unexpected error] {err=}  {type(err)=}")
+
+        # スタックトレース表示
+        print(traceback.format_exc())
+
         raise

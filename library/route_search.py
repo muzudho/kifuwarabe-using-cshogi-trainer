@@ -1,5 +1,6 @@
 import cshogi
 from py_kifuwarabe_trainer import ColorHelper, SquareHelper, BoardHelper
+from library.cshogi_helper import CshogiHelper
 from library.shogi import FILE_LEN, RANK_LEN, BOARD_AREA, EAST, NORTH_EAST, NORTH_NORTH_EAST, NORTH, NORTH_WEST, NORTH_NORTH_WEST, WEST, SOUTH_WEST, SOUTH_SOUTH_WEST, SOUTH, SOUTH_EAST, SOUTH_SOUTH_EAST
 from library.engine_helper import LegalMovesHelper
 
@@ -19,17 +20,43 @@ class MovementOfGold():
     def create_successor_squares(self, sq):
         """近接するマス番号のリスト生成"""
 
-        # リストの要素に None が含まれることに注意
-        items = [
-            SquareHelper.east_of_sq_from_black(self._color, sq),            # 東
-            SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
-            SquareHelper.north_of_sq_from_black(self._color, sq),           # 北
-            SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
-            SquareHelper.west_of_sq_from_black(self._color, sq),            # 西
-            SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
-            SquareHelper.south_of_sq_from_black(self._color, sq),           # 南
-            SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
-        ]
+        if self._color == cshogi.BLACK:
+            # +---+---+---+
+            # + x | x | x |
+            # +---+---+---+
+            # + x |   | x |
+            # +---+---+---+
+            # +   | x |   |
+            # +---+---+---+
+            #
+            # リストの要素に None が含まれることに注意
+            items = [
+                SquareHelper.east_of_sq_from_black(self._color, sq),            # 東
+                SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
+                SquareHelper.north_of_sq_from_black(self._color, sq),           # 北
+                SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
+                SquareHelper.west_of_sq_from_black(self._color, sq),            # 西
+                SquareHelper.south_of_sq_from_black(self._color, sq),           # 南
+            ]
+        
+        else:
+            # +---+---+---+
+            # +   | x |   |
+            # +---+---+---+
+            # + x |   | x |
+            # +---+---+---+
+            # + x | x | x |
+            # +---+---+---+
+            #
+            # リストの要素に None が含まれることに注意
+            items = [
+                SquareHelper.east_of_sq_from_black(self._color, sq),            # 東
+                SquareHelper.north_of_sq_from_black(self._color, sq),           # 北
+                SquareHelper.west_of_sq_from_black(self._color, sq),            # 西
+                SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
+                SquareHelper.south_of_sq_from_black(self._color, sq),           # 南
+                SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
+            ]
 
         # リストの要素から None を除去
         return list(filter(None, items))
@@ -53,6 +80,14 @@ class MovementOfKing():
         先手も後手も同じです
         """
 
+        # +---+---+---+
+        # + x | x | x |
+        # +---+---+---+
+        # + x |   | x |
+        # +---+---+---+
+        # + x | x | x |
+        # +---+---+---+
+        #
         # リストの要素に None が含まれることに注意
         items = [
             SquareHelper.east_of_sq_from_black(cshogi.BLACK, sq),       # 東
@@ -223,12 +258,14 @@ class RouteSearchSub():
             opponent_color = ColorHelper.flip(board.turn)
 
             # 相手の歩の利き
-            if piece == BoardHelper.friend_pawn_from_black(opponent_color):
+            if piece == CshogiHelper.friend_pawn_from_black(opponent_color):
                 # 黒番から見て北に利きを１つ追加
-                control_board[SquareHelper.north_of_sq_from_black(opponent_color, sq)] += 1
+                next_sq = SquareHelper.north_of_sq_from_black(opponent_color, sq)
+                if next_sq is not None:
+                    control_board[next_sq] += 1
 
             # 相手の香の利き
-            elif piece == BoardHelper.friend_lance_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_lance_from_black(opponent_color):
                 for delta in range(1, BoardHelper.rank_from_black(opponent_color, rank)):
                     control_rank = rank - BoardHelper.positive_number_from_black(opponent_color, delta)
                     control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
@@ -237,141 +274,183 @@ class RouteSearchSub():
                         break
 
             # 相手の桂の利き
-            elif piece == BoardHelper.friend_knight_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_knight_from_black(opponent_color):
                 # 黒番から見て北北に行けるか？
                 if SquareHelper.can_it_go_north_north_from_black(opponent_color, rank=rank):
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て北北東に利きを１つ追加
-                        control_board[SquareHelper.north_north_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_north_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
                     
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て北北西に利きを１つ追加
-                        control_board[SquareHelper.north_north_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_north_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
             # 相手の銀の利き
-            elif piece == BoardHelper.friend_silver_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_silver_from_black(opponent_color):
                 # 黒番から見て北に行けるか？
                 if SquareHelper.can_it_go_north_from_black(opponent_color, rank=rank):
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て北東に利きを１つ追加
-                        control_board[SquareHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て北に利きを１つ追加
-                    control_board[SquareHelper.north_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.north_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て北西に利きを１つ追加
-                        control_board[SquareHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                 # 黒番から見て南に行けるか？
                 if SquareHelper.can_it_go_south_from_black(opponent_color, rank=rank):
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て南西に利きを１つ追加
-                        control_board[SquareHelper.south_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.south_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て南東に利きを１つ追加
-                        control_board[SquareHelper.south_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.south_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
             # 相手の金と杏圭全の利き
             elif piece in [
-                BoardHelper.friend_gold_from_black(opponent_color),
-                BoardHelper.friend_prom_pawn_from_black(opponent_color),
-                BoardHelper.friend_prom_lance_from_black(opponent_color),
-                BoardHelper.friend_prom_knight_from_black(opponent_color),
-                BoardHelper.friend_prom_silver_from_black(opponent_color)]:
+                CshogiHelper.friend_gold_from_black(opponent_color),
+                CshogiHelper.friend_prom_pawn_from_black(opponent_color),
+                CshogiHelper.friend_prom_lance_from_black(opponent_color),
+                CshogiHelper.friend_prom_knight_from_black(opponent_color),
+                CshogiHelper.friend_prom_silver_from_black(opponent_color)]:
 
                 # 黒番から見て東に行けるか？
                 if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                     # 黒番から見て東に利きを１つ追加
-                    control_board[SquareHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.west_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て北に行けるか？
                 if SquareHelper.can_it_go_north_from_black(opponent_color, rank=rank):
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て南西に利きを１つ追加
-                        control_board[SquareHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て北に利きを１つ追加
-                    control_board[SquareHelper.north_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.north_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て北西に利きを１つ追加
-                        control_board[SquareHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                 # 黒番から見て西に行けるか？
                 if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                     # 黒番から見て西に利きを１つ追加
-                    control_board[SquareHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.west_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て南に行けるか？
                 if SquareHelper.can_it_go_south_from_black(opponent_color, rank=rank):
                     # 黒番から見て南に利きを１つ追加
-                    control_board[SquareHelper.south_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.south_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
             # 相手の角の利き
-            elif piece == BoardHelper.friend_bishop_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_bishop_from_black(opponent_color):
                 RouteSearchSub.append_control_of_bishop(board, control_board, file, rank)
 
             # 相手の飛の利き
-            elif piece == BoardHelper.friend_rook_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_rook_from_black(opponent_color):
                 RouteSearchSub.append_control_of_rook(board, control_board, file, rank)
 
             # 相手の玉の利き
-            elif piece == BoardHelper.friend_king_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_king_from_black(opponent_color):
                 if without_opponet_king_control:
                     continue
 
                 # 黒番から見て東に行けるか？
                 if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                     # 黒番から見て東に利きを１つ追加
-                    control_board[SquareHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.west_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て北に行けるか？
                 if SquareHelper.can_it_go_north_from_black(opponent_color, rank=rank):
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て南西に利きを１つ追加
-                        control_board[SquareHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て北に利きを１つ追加
-                    control_board[SquareHelper.north_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.north_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て北西に利きを１つ追加
-                        control_board[SquareHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                 # 黒番から見て西に行けるか？
                 if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                     # 黒番から見て西に利きを１つ追加
-                    control_board[SquareHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.west_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て南に行けるか？
                 if SquareHelper.can_it_go_south_from_black(opponent_color, rank=rank):
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て南西に利きを１つ追加
-                        control_board[SquareHelper.south_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.south_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て南に利きを１つ追加
-                    control_board[SquareHelper.south_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.south_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                       control_board[next_sq] += 1
 
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て南東に利きを１つ追加
-                        control_board[SquareHelper.south_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.south_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
             # 相手の馬の利き
-            elif piece == BoardHelper.friend_prom_bishop_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_prom_bishop_from_black(opponent_color):
                 RouteSearchSub.append_control_of_bishop(board, control_board, file, rank)
 
                 # 黒番から見て北に行けるか？
@@ -379,48 +458,64 @@ class RouteSearchSub():
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て南西に利きを１つ追加
-                        control_board[SquareHelper.north_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て北西に利きを１つ追加
-                        control_board[SquareHelper.north_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.north_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                 # 黒番から見て南に行けるか？
                 if SquareHelper.can_it_go_south_from_black(opponent_color, rank=rank):
                     # 黒番から見て西に行けるか？
                     if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                         # 黒番から見て南西に利きを１つ追加
-                        control_board[SquareHelper.south_west_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.south_west_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
                     # 黒番から見て東に行けるか？
                     if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                         # 黒番から見て南東に利きを１つ追加
-                        control_board[SquareHelper.south_east_of_sq_from_black(opponent_color, sq)] += 1
+                        next_sq = SquareHelper.south_east_of_sq_from_black(opponent_color, sq)
+                        if next_sq is not None:
+                            control_board[next_sq] += 1
 
             # 相手の竜の利き
-            elif piece == BoardHelper.friend_prom_rook_from_black(opponent_color):
+            elif piece == CshogiHelper.friend_prom_rook_from_black(opponent_color):
                 RouteSearchSub.append_control_of_rook(board, control_board, file, rank)
 
                 # 黒番から見て東に行けるか？
                 if SquareHelper.can_it_go_east_from_black(opponent_color, file=file):
                     # 黒番から見て東に利きを１つ追加
-                    control_board[SquareHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.west_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て北に行けるか？
                 if SquareHelper.can_it_go_north_from_black(opponent_color, rank=rank):
                     # 黒番から見て北に利きを１つ追加
-                    control_board[SquareHelper.north_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.north_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て西に行けるか？
                 if SquareHelper.can_it_go_west_from_black(opponent_color, file=file):
                     # 黒番から見て西に利きを１つ追加
-                    control_board[SquareHelper.west_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.west_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
                 # 黒番から見て南に行けるか？
                 if SquareHelper.can_it_go_south_from_black(opponent_color, rank=rank):
                     # 黒番から見て南に利きを１つ追加
-                    control_board[SquareHelper.south_of_sq_from_black(opponent_color, sq)] += 1
+                    next_sq = SquareHelper.south_of_sq_from_black(opponent_color, sq)
+                    if next_sq is not None:
+                        control_board[next_sq] += 1
 
 
 class RouteSearch():

@@ -445,7 +445,7 @@ class SquareHelper():
 
     @staticmethod
     def south_west_of_sq_from_black(color, sq):
-        """TODO 黒番から見て、南西隣のマス番号を取得
+        """黒番から見て、南西隣のマス番号を取得
 
         Returns
         -------
@@ -595,118 +595,6 @@ class BoardHelper():
         if color == cshogi.BLACK:
             return rank
         return RANK_LEN - rank
-
-
-    @staticmethod
-    def friend_pawn_from_black(color):
-        """黒番から見て、自駒の歩"""
-        if color == cshogi.BLACK:
-            return cshogi.BPAWN
-        return cshogi.WPAWN
-
-
-    @staticmethod
-    def friend_lance_from_black(color):
-        """黒番から見て、自駒の香"""
-        if color == cshogi.BLACK:
-            return cshogi.BLANCE
-        return cshogi.WLANCE
-
-
-    @staticmethod
-    def friend_knight_from_black(color):
-        """黒番から見て、自駒の桂"""
-        if color == cshogi.BLACK:
-            return cshogi.BKNIGHT
-        return cshogi.WKNIGHT
-
-
-    @staticmethod
-    def friend_silver_from_black(color):
-        """黒番から見て、自駒の銀"""
-        if color == cshogi.BLACK:
-            return cshogi.BSILVER
-        return cshogi.WSILVER
-
-
-    @staticmethod
-    def friend_gold_from_black(color):
-        """黒番から見て、自駒の金"""
-        if color == cshogi.BLACK:
-            return cshogi.BGOLD
-        return cshogi.WGOLD
-
-
-    @staticmethod
-    def friend_bishop_from_black(color):
-        """黒番から見て、自駒の角"""
-        if color == cshogi.BLACK:
-            return cshogi.BBISHOP
-        return cshogi.WBISHOP
-
-
-    @staticmethod
-    def friend_rook_from_black(color):
-        """黒番から見て、自駒の飛"""
-        if color == cshogi.BLACK:
-            return cshogi.BROOK
-        return cshogi.WROOK
-
-
-    @staticmethod
-    def friend_king_from_black(color):
-        """黒番から見て、自駒の玉"""
-        if color == cshogi.BLACK:
-            return cshogi.BKING
-        return cshogi.WKING
-
-
-    @staticmethod
-    def friend_prom_pawn_from_black(color):
-        """黒番から見て、自駒のと金"""
-        if color == cshogi.BLACK:
-            return cshogi.BPROM_PAWN
-        return cshogi.WPROM_PAWN
-
-
-    @staticmethod
-    def friend_prom_lance_from_black(color):
-        """黒番から見て、自駒の杏"""
-        if color == cshogi.BLACK:
-            return cshogi.BPROM_LANCE
-        return cshogi.WPROM_LANCE
-
-
-    @staticmethod
-    def friend_prom_knight_from_black(color):
-        """黒番から見て、自駒の圭"""
-        if color == cshogi.BLACK:
-            return cshogi.BPROM_KNIGHT
-        return cshogi.WPROM_KNIGHT
-
-
-    @staticmethod
-    def friend_prom_silver_from_black(color):
-        """黒番から見て、自駒の全"""
-        if color == cshogi.BLACK:
-            return cshogi.BPROM_SILVER
-        return cshogi.WPROM_SILVER
-
-
-    @staticmethod
-    def friend_prom_bishop_from_black(color):
-        """黒番から見て、自駒の馬"""
-        if color == cshogi.BLACK:
-            return cshogi.BPROM_BISHOP
-        return cshogi.WPROM_BISHOP
-
-
-    @staticmethod
-    def friend_prom_rook_from_black(color):
-        """黒番から見て、自駒の竜"""
-        if color == cshogi.BLACK:
-            return cshogi.BPROM_ROOK
-        return cshogi.WPROM_ROOK
 
 
 class UsiSquareHelper():

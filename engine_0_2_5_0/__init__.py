@@ -2,7 +2,8 @@ import cshogi
 import datetime
 import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper, HumanHelper
-from library.route_search import MovementOfKing, RouteSearch
+from library.cshogi_helper import CshogiHelper
+from library.route_search import MovementOfGold, MovementOfKing, RouteSearch
 
 
 _engine_file_path = "engine_0_2_5_0/engine_name.txt"
@@ -65,21 +66,22 @@ class UsiEngine_0_2_5_0(UsiEngine):
         
         else:
             best_move_u = None
-            is_nearest_route = False
 
-            # 玉の経路探索開始
-            king_route_search = RouteSearch.new_obj(
-                    board=self._board,
-                    # 開始地点（自玉のある場所）のマス番号
-                    start_sq=BoardHelper.get_friend_king_sq(self._board),
-                    # 目的地（敵玉のある場所）のマス番号
-                    goal_sq=BoardHelper.get_opponent_king_sq(self._board),
-                    # 敵玉自身の利きは無視する
-                    without_opponet_king_control=True)
+            # 玉のマス番号
+            friend_king_sq = BoardHelper.get_friend_king_sq(self._board)
+            opponent_king_sq = BoardHelper.get_opponent_king_sq(self._board)
 
-            # 玉の経路の次の移動先マス。無ければナン
-            friend_k_next_sq = king_route_search.next_sq(MovementOfKing(self._board.turn), king_route_search.start_sq)
-            print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_k_next_sq=}  {king_route_search.start_sq=}")
+            # 駒の経路探索開始
+            gold_route_search = None
+            king_route_search = None
+
+            # 駒の経路探索終了
+            is_gold_route_searched = False
+            is_king_route_searched = False
+
+            # 駒の最短経路の次の移動先マス。無ければナン
+            friend_gold_next_sq = None
+            friend_king_next_sq = None
 
             # 相手玉と、進んだ駒の距離が縮まる動きのうち、相手玉から一番遠い駒を選ぶ
             #
@@ -89,6 +91,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
             farthest_distance = 0
             #nearest_distance = 8 + 8 + 1
 
+            # シャッフルしておくこと
             random.shuffle(move_list)
 
             # 指し手一覧ループ
@@ -107,33 +110,73 @@ class UsiEngine_0_2_5_0(UsiEngine):
                 #print(f"{dst_piece=}")
 
                 # 駒を取るような動きはしません（ただし、玉は最短経路を進みたいので、玉は除く）
-                if dst_piece != 0 and move.src_sq != king_route_search.start_sq:
+                if dst_piece != 0 and move.src_sq != friend_king_sq:
                     continue
 
                 # 動かした駒の移動元位置と、敵玉とのマンハッタン距離
                 if move.src_sq is None:
                     d_of_src = 99
                 else:
-                    d_of_src = BoardHelper.get_manhattan_distance(king_route_search.goal_sq, move.src_sq)
+                    d_of_src = BoardHelper.get_manhattan_distance(opponent_king_sq, move.src_sq)
 
                 # 動かした駒の移動先位置と、敵玉とのマンハッタン距離
-                d_of_dst = BoardHelper.get_manhattan_distance(king_route_search.goal_sq, move.dst_sq)
+                d_of_dst = BoardHelper.get_manhattan_distance(opponent_king_sq, move.dst_sq)
                 #print(f"{d=}")
-                #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(king_route_search.goal_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
+                #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(opponent_king_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
-                # 自玉が移動した場合、敵玉へ近づく最短経路を調べるアルゴリズムがあるので、それを使う
-                if move.src_sq == king_route_search.start_sq:
+                # 盤上の自金が移動した場合
+                if move.src_sq is not None and CshogiHelper.is_gold(self._board.piece(move.src_sq)):
 
-                    # 自玉が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
-                    if friend_k_next_sq is not None and move.dst_sq == friend_k_next_sq:
+                    if gold_route_search is None:
+                        gold_route_search = RouteSearch.new_obj(
+                                board=self._board,
+                                # 開始地点（自駒のある場所）のマス番号
+                                start_sq=move.src_sq,
+                                # 目的地（敵玉のある場所）のマス番号
+                                goal_sq=opponent_king_sq,
+                                # 敵玉自身の利きは無視する
+                                without_opponet_king_control=True)
+
+                    if friend_gold_next_sq is None:
+                        friend_gold_next_sq = gold_route_search.next_sq(MovementOfGold(self._board.turn), gold_route_search.start_sq)
+                        print(f"[go] 金の経路の次の移動先マス。無ければナン {friend_gold_next_sq=}  {gold_route_search.start_sq=}")
+
+                    # 当該駒が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
+                    if friend_gold_next_sq is not None and move.dst_sq == friend_gold_next_sq:
                         best_move_u = move_u
-                        is_nearest_route = True
+                        is_gold_route_searched = True
 
                     # 最短経路を進めるなら、それ以外の動きは選ばない
-                    if is_nearest_route:
+                    if is_gold_route_searched:
+                        continue
+
+                # 盤上の自玉が移動した場合（玉は盤上に限られるが）
+                if move.src_sq is not None and CshogiHelper.is_king(self._board.piece(move.src_sq)):
+
+                    if king_route_search is None:
+                        king_route_search = RouteSearch.new_obj(
+                                board=self._board,
+                                # 開始地点（自駒のある場所）のマス番号
+                                start_sq=move.src_sq,
+                                # 目的地（敵玉のある場所）のマス番号
+                                goal_sq=opponent_king_sq,
+                                # 敵玉自身の利きは無視する
+                                without_opponet_king_control=True)
+
+                    if friend_king_next_sq is None:
+                        friend_king_next_sq = king_route_search.next_sq(MovementOfKing(self._board.turn), king_route_search.start_sq)
+                        print(f"[go] 玉の経路の次の移動先マス。無ければナン {friend_king_next_sq=}  {king_route_search.start_sq=}")
+
+                    # 当該駒が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
+                    if friend_king_next_sq is not None and move.dst_sq == friend_king_next_sq:
+                        best_move_u = move_u
+                        is_king_route_searched = True
+
+                    # 最短経路を進めるなら、それ以外の動きは選ばない
+                    if is_king_route_searched:
                         continue
                         
-                # 玉以外の駒なら
+                # それ以外の駒なら
 
                 # 相手玉と、進んだ駒の距離が縮まる動きだ。かつ、相手玉から一番遠い駒だ
                 if d_of_dst < d_of_src and farthest_distance < d_of_src:
