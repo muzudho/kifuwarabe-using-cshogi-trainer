@@ -124,8 +124,12 @@ class UsiEngine_0_2_5_0(UsiEngine):
                 #print(f"{d=}")
                 #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(opponent_king_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
-                # 盤上の自金が移動した場合
+                # 盤上の自金が移動した場合（金の最短経路をまだ選んでいない場合）
                 if move.src_sq is not None and CshogiHelper.is_gold(self._board.piece(move.src_sq)):
+
+                    # 既に最短経路を選んでいる場合は無視
+                    if is_gold_route_searched:
+                        continue
 
                     if gold_route_search is None:
                         gold_route_search = RouteSearch.new_obj(
@@ -146,12 +150,12 @@ class UsiEngine_0_2_5_0(UsiEngine):
                         best_move_u = move_u
                         is_gold_route_searched = True
 
-                    # 最短経路を進めるなら、それ以外の動きは選ばない
-                    if is_gold_route_searched:
-                        continue
-
-                # 盤上の自玉が移動した場合（玉は盤上に限られるが）
+                # 盤上の自玉が移動した場合（玉は盤上に限られるが）（玉の最短経路をまだ選んでいない場合）
                 if move.src_sq is not None and CshogiHelper.is_king(self._board.piece(move.src_sq)):
+
+                    # 既に最短経路を選んでいる場合は無視
+                    if is_king_route_searched:
+                        continue
 
                     if king_route_search is None:
                         king_route_search = RouteSearch.new_obj(
@@ -171,10 +175,6 @@ class UsiEngine_0_2_5_0(UsiEngine):
                     if friend_king_next_sq is not None and move.dst_sq == friend_king_next_sq:
                         best_move_u = move_u
                         is_king_route_searched = True
-
-                    # 最短経路を進めるなら、それ以外の動きは選ばない
-                    if is_king_route_searched:
-                        continue
                         
                 # それ以外の駒なら
 
