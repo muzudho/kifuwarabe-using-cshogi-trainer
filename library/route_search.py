@@ -6,6 +6,61 @@ from library.engine_helper import LegalMovesHelper
 from library.view import RouteSearchView
 
 
+class MovementOfSilver():
+    """銀の動き
+    
+    銀は５方向に移動できます。先手後手で動きが異なります
+    """
+
+
+    def __init__(self, color):
+        """初期化"""
+        self._color = color
+
+
+    def create_control_squares(self, sq):
+        """利きの届くマス番号のリスト生成"""
+
+        if self._color == cshogi.BLACK:
+            # +---+---+---+
+            # + x | x | x |
+            # +---+---+---+
+            # +   |   |   |
+            # +---+---+---+
+            # + x |   | x |
+            # +---+---+---+
+            #
+            # リストの要素に None が含まれることに注意
+            items = [
+                SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
+                SquareHelper.north_of_sq_from_black(self._color, sq),           # 北
+                SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
+                SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
+                SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
+            ]
+        
+        else:
+            # +---+---+---+
+            # + x |   | x |
+            # +---+---+---+
+            # +   |   |   |
+            # +---+---+---+
+            # + x | x | x |
+            # +---+---+---+
+            #
+            # リストの要素に None が含まれることに注意
+            items = [
+                SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
+                SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
+                SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
+                SquareHelper.south_of_sq_from_black(self._color, sq),           # 南
+                SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
+            ]
+
+        # リストの要素から None を除去
+        return list(filter(None, items))
+
+
 class MovementOfGold():
     """金の動き
     
