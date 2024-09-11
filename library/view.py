@@ -70,3 +70,20 @@ CONTROL BOARD
 
         print(f"""\
 -------------""")
+
+
+    def print_return(route_board):
+        """経路盤（復路）の表示"""
+
+        print(f"""\
+ROUTE BOARD RETURN
+------------------""")
+
+        for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+            for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
+                sq = CshogiHelper.file_rank_to_sq(file, rank)
+                print(f"{route_board[sq]:3} ", end='')
+            print() # 改行
+
+        print(f"""\
+------------------""")

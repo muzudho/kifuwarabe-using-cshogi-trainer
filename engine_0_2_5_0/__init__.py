@@ -3,7 +3,7 @@ import datetime
 import random
 from py_kifuwarabe_trainer import UsiEngine, SquareHelper, BoardHelper, UsiSquareHelper, UsiMoveHelper, HumanHelper
 from library.cshogi_helper import CshogiHelper
-from library.route_search import MovementOfSilver, MovementOfGold, MovementOfKing, RouteSearch
+from library.route_search import MovementOfKnight, MovementOfSilver, MovementOfGold, MovementOfKing, RouteSearch
 
 
 _engine_file_path = "engine_0_2_5_0/engine_name.txt"
@@ -77,6 +77,9 @@ class MovePlan():
 
 
     def create_movement(self, color):
+        if self._piece_type == 'knight':
+            return MovementOfKnight(color)
+
         if self._piece_type == 'silver':
             return MovementOfSilver(color)
 
@@ -88,6 +91,9 @@ class MovePlan():
 
 
     def to_piece_kanji(self):
+        if self._piece_type == 'knight':
+            return '桂'
+
         if self._piece_type == 'silver':
             return '銀'
 
@@ -110,6 +116,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
         self._friend_king_sq = None
         self._opponent_king_sq = None
 
+        self._knight_plan = MovePlan('knight')
         self._silver_plan = MovePlan('silver')
         self._gold_plan = MovePlan('gold')
         self._king_plan = MovePlan('king')
@@ -131,7 +138,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
         if piece_plan.friend_next_sq is None:
             piece_plan.friend_next_sq = piece_plan.route_search.next_sq(piece_plan.create_movement(self._board.turn), piece_plan.route_search.start_sq)
-            print(f"[go] {piece_plan.to_piece_kanji()}の経路の次の移動先マス。無ければナン {CshogiHelper.sq_to_readable(piece_plan.friend_next_sq)=}  {CshogiHelper.sq_to_readable(piece_plan.route_search.start_sq)=}")
+            print(f"[go] {piece_plan.to_piece_kanji()}の経路の次の移動先マス。無ければナン next_masu={CshogiHelper.sq_to_readable(piece_plan.friend_next_sq)}  start_masu={CshogiHelper.sq_to_readable(piece_plan.route_search.start_sq)}")
 
         # 当該駒が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
         if piece_plan.friend_next_sq is not None and move.dst_sq == piece_plan.friend_next_sq:
@@ -192,6 +199,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
             self._opponent_king_sq = BoardHelper.get_opponent_king_sq(self._board)
 
             # 駒の初期化
+            self._knight_plan.subinit()
             self._silver_plan.subinit()
             self._gold_plan.subinit()
             self._king_plan.subinit()
@@ -237,35 +245,45 @@ class UsiEngine_0_2_5_0(UsiEngine):
                 #print(f"{d=}")
                 #print(f"min_d={nearest_distance}  {d=}  opponent_k_masu={HumanHelper.sq_to_readable(self._opponent_king_sq)}  dst_masu={HumanHelper.sq_to_readable(move.dst_sq)}")
 
-                # 盤上の自銀が移動した場合
-                if move.src_sq is not None and CshogiHelper.is_silver(self._board.piece(move.src_sq)):
+                # 盤上の自桂が移動した場合
+                if move.src_sq is not None and CshogiHelper.is_knight(self._board.piece(move.src_sq)):
 
                     # 既に最短経路を選んでいる場合は無視
-                    if self._silver_plan._is_route_searched:
+                    if self._knight_plan._is_route_searched:
                         continue
 
-                    self.case_of_piece(move, self._silver_plan)
+                    self.case_of_piece(move, self._knight_plan)
                     continue
 
-                # 盤上の自金が移動した場合
-                if move.src_sq is not None and CshogiHelper.is_gold(self._board.piece(move.src_sq)):
+                # # 盤上の自銀が移動した場合
+                # if move.src_sq is not None and CshogiHelper.is_silver(self._board.piece(move.src_sq)):
 
-                    # 既に最短経路を選んでいる場合は無視
-                    if self._gold_plan._is_route_searched:
-                        continue
+                #     # 既に最短経路を選んでいる場合は無視
+                #     if self._silver_plan._is_route_searched:
+                #         continue
 
-                    self.case_of_piece(move, self._gold_plan)
-                    continue
+                #     self.case_of_piece(move, self._silver_plan)
+                #     continue
 
-                # 盤上の自玉が移動した場合（玉は盤上に限られるが）
-                if move.src_sq is not None and CshogiHelper.is_king(self._board.piece(move.src_sq)):
+                # # 盤上の自金が移動した場合
+                # if move.src_sq is not None and CshogiHelper.is_gold(self._board.piece(move.src_sq)):
 
-                    # 既に最短経路を選んでいる場合は無視
-                    if self._king_plan._is_route_searched:
-                        continue
+                #     # 既に最短経路を選んでいる場合は無視
+                #     if self._gold_plan._is_route_searched:
+                #         continue
 
-                    self.case_of_piece(move, self._king_plan)
-                    continue
+                #     self.case_of_piece(move, self._gold_plan)
+                #     continue
+
+                # # 盤上の自玉が移動した場合（玉は盤上に限られるが）
+                # if move.src_sq is not None and CshogiHelper.is_king(self._board.piece(move.src_sq)):
+
+                #     # 既に最短経路を選んでいる場合は無視
+                #     if self._king_plan._is_route_searched:
+                #         continue
+
+                #     self.case_of_piece(move, self._king_plan)
+                #     continue
 
                         
                 # それ以外の駒なら
