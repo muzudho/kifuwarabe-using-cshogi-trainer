@@ -1,6 +1,7 @@
 import cshogi
 import datetime
 import random
+from library.cshogi_helper import CshogiHelper
 from library.shogi import FILE_LEN, RANK_LEN, BOARD_AREA, EAST, NORTH_EAST, NORTH_NORTH_EAST, NORTH, NORTH_WEST, NORTH_NORTH_WEST, WEST, SOUTH_WEST, SOUTH_SOUTH_WEST, SOUTH, SOUTH_EAST, SOUTH_SOUTH_EAST
 
 
@@ -210,11 +211,6 @@ class SquareHelper():
         if alphabet == 'i':
             return 9
         raise Error(f'rank alphabet: {alphabet}')
-
-
-    @staticmethod
-    def file_rank_to_sq(file, rank):
-        return file * 9 + rank
 
 
     @staticmethod
@@ -505,21 +501,32 @@ class Move():
     """指し手"""
 
 
-    def __init__(self,
+    def __init__(
+        self,
+        code,
         src_sq,
         dst_sq):
         """初期化
         
         Parameters
         ----------
+        code : str
+            コード
         src_sq : int
             移動元マス番号
             駒台ならナン
         dst_sq : int
             移動先マス番号
         """
+        self._code = code
         self._src_sq = src_sq
         self._dst_sq = dst_sq
+
+
+    @property
+    def code(self):
+        """USI書式"""
+        return self._code
 
 
     @property
@@ -626,7 +633,7 @@ class UsiSquareHelper():
             file_th = int(code[0: 1])
             rank_th = SquareHelper.a_to_i(code[1: 2])
 
-        return SquareHelper.file_rank_to_sq(file_th - 1, rank_th - 1)
+        return CshogiHelper.file_rank_to_sq(file_th - 1, rank_th - 1)
 
 
 class UsiMoveHelper():
@@ -636,6 +643,7 @@ class UsiMoveHelper():
     @staticmethod
     def code_to_move(code):
         return Move(
+            code=code,
             # 移動元マス番号 FIXME 駒台注意
             src_sq=UsiSquareHelper.code_to_sq(code[0: 2]),
             # 移動先マス番号

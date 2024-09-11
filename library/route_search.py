@@ -3,6 +3,7 @@ from py_kifuwarabe_trainer import ColorHelper, SquareHelper, BoardHelper
 from library.cshogi_helper import CshogiHelper
 from library.shogi import FILE_LEN, RANK_LEN, BOARD_AREA, EAST, NORTH_EAST, NORTH_NORTH_EAST, NORTH, NORTH_WEST, NORTH_NORTH_WEST, WEST, SOUTH_WEST, SOUTH_SOUTH_WEST, SOUTH, SOUTH_EAST, SOUTH_SOUTH_EAST
 from library.engine_helper import LegalMovesHelper
+from library.view import RouteSearchView
 
 
 class MovementOfGold():
@@ -17,8 +18,8 @@ class MovementOfGold():
         self._color = color
 
 
-    def create_successor_squares(self, sq):
-        """近接するマス番号のリスト生成"""
+    def create_control_squares(self, sq):
+        """利きの届くマス番号のリスト生成"""
 
         if self._color == cshogi.BLACK:
             # +---+---+---+
@@ -74,8 +75,8 @@ class MovementOfKing():
         self._color = color
 
 
-    def create_successor_squares(self, sq):
-        """近接するマス番号のリスト生成
+    def create_control_squares(self, sq):
+        """利きの届くマス番号のリスト生成
 
         先手も後手も同じです
         """
@@ -148,7 +149,7 @@ class RouteSearchSub():
             control_rank = rank - delta
             if control_file < 0 or control_rank < 0:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_sq = CshogiHelper.file_rank_to_sq(control_file, control_rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -160,7 +161,7 @@ class RouteSearchSub():
             control_rank = rank - delta
             if FILE_LEN <= control_file or control_rank < 0:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_sq = CshogiHelper.file_rank_to_sq(control_file, control_rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -172,7 +173,7 @@ class RouteSearchSub():
             control_rank = rank + delta
             if FILE_LEN <= control_file or RANK_LEN <= control_rank:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_sq = CshogiHelper.file_rank_to_sq(control_file, control_rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -184,7 +185,7 @@ class RouteSearchSub():
             control_rank = rank + delta
             if control_file < 0 or RANK_LEN <= control_rank:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(control_file, control_rank)
+            control_sq = CshogiHelper.file_rank_to_sq(control_file, control_rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -200,7 +201,7 @@ class RouteSearchSub():
             control_file = file - delta
             if control_file < 0:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
+            control_sq = CshogiHelper.file_rank_to_sq(control_file, rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -211,7 +212,7 @@ class RouteSearchSub():
             control_rank = rank - delta
             if control_rank < 0:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
+            control_sq = CshogiHelper.file_rank_to_sq(file, control_rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -222,7 +223,7 @@ class RouteSearchSub():
             control_file = file + delta
             if FILE_LEN <= control_file:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(control_file, rank)
+            control_sq = CshogiHelper.file_rank_to_sq(control_file, rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -233,7 +234,7 @@ class RouteSearchSub():
             control_rank = rank + delta
             if RANK_LEN <= control_rank:
                 break
-            control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
+            control_sq = CshogiHelper.file_rank_to_sq(file, control_rank)
             control_board[control_sq] += 1
 
             if board.piece(control_sq) != 0:
@@ -268,7 +269,7 @@ class RouteSearchSub():
             elif piece == CshogiHelper.friend_lance_from_black(opponent_color):
                 for delta in range(1, BoardHelper.rank_from_black(opponent_color, rank)):
                     control_rank = rank - BoardHelper.positive_number_from_black(opponent_color, delta)
-                    control_sq = SquareHelper.file_rank_to_sq(file, control_rank)
+                    control_sq = CshogiHelper.file_rank_to_sq(file, control_rank)
                     control_board[control_sq] += 1
                     if board.piece(control_sq) != 0:
                         break
@@ -580,8 +581,8 @@ class RouteSearch():
 
         route_board[start_sq] = 0
 
-        # 今の隣
-        adjacent_square_list = movement_of_piece.create_successor_squares(start_sq)
+        # 駒の利きが届くマス
+        adjacent_square_list = movement_of_piece.create_control_squares(start_sq)
 
         # 再帰ではなく、ループを使う
         # 幅優先探索
@@ -591,7 +592,7 @@ class RouteSearch():
 
             for adjacent_sq in adjacent_square_list:
                 if RouteSearch._search_outward(route_board, control_board, occupied_board, adjacent_sq, remaining_distance - 1):
-                    temp_list = movement_of_piece.create_successor_squares(adjacent_sq)
+                    temp_list = movement_of_piece.create_control_squares(adjacent_sq)
                     two_adjacent_square_list.extend(temp_list)
 
                 # ゴールに至った
@@ -607,17 +608,8 @@ class RouteSearch():
             if is_searched:
                 break
 
-#         # 経路盤（往路）について
-#         print(f"""\
-# ROUTE BOARD OUTWARD
-# -------------------""")
-#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-#                 sq = SquareHelper.file_rank_to_sq(file, rank)
-#                 print(f"{route_board[sq]:3} ", end='')
-#             print() # 改行
-#         print(f"""\
-# -------------------""")
+        # 経路盤（往路）
+        RouteSearchView.print_outward(route_board)
 
         # ゴールに至らないことが分かった時
         if not is_searched:
@@ -631,20 +623,11 @@ class RouteSearch():
         route_board[goal_sq] = max_count
         #print(f"[search] ゴール route_board[{goal_sq=}] を {max_count=} にする")
 
-        # 今の隣
-        adjacent_square_list = movement_of_piece.create_successor_squares(goal_sq)
+        # 駒の利きが届くマス
+        adjacent_square_list = movement_of_piece.create_control_squares(goal_sq)
 
-        # 経路盤（往路）について
-#         print(f"""\
-# ROUTE BOARD 終着点をMAX値にする
-# -------------------""")
-#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-#                 sq = SquareHelper.file_rank_to_sq(file, rank)
-#                 print(f"{route_board[sq]:3} ", end='')
-#             print() # 改行
-#         print(f"""\
-# -------------------""")
+        # 経路盤（往路２）
+        RouteSearchView.print_outward2(route_board)
 
         #
         # DO end から start へ逆順に探索。この探索が本番の探索（確定の探索）。ルート盤のマスの負数を絶対値にしていくとちょうど昇順の正の数になっていく
@@ -660,7 +643,7 @@ class RouteSearch():
 
             for adjacent_sq in adjacent_square_list:
                 if RouteSearch._search_return(route_board, adjacent_sq, remaining_distance + 1):
-                    temp_list = movement_of_piece.create_successor_squares(adjacent_sq)
+                    temp_list = movement_of_piece.create_control_squares(adjacent_sq)
                     two_adjacent_square_list.extend(temp_list)
 
             adjacent_square_list = two_adjacent_square_list
@@ -730,29 +713,11 @@ class RouteSearch():
         # # DO すべての合法手一覧
         # LegalMovesHelper.for_each_legal_move(board, each_legal_move)
 
-#         # 盤上の自駒の有無について
-#         print(f"""\
-# OCCUPIED
-# --------""")
-#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-#                 sq = SquareHelper.file_rank_to_sq(file, rank)
-#                 print(f"{occupied_board[sq]:3} ", end='')
-#             print() # 改行
-#         print(f"""\
-# --------""")
+        # 盤上の自駒の有無について
+        RouteSearchView.print_occupied(occupied_board)
 
-#         # 利き盤について
-#         print(f"""\
-# CONTROL BOARD
-# -------------""")
-#         for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-#             for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-#                 sq = SquareHelper.file_rank_to_sq(file, rank)
-#                 print(f"{control_board[sq]:3} ", end='')
-#             print() # 改行
-#         print(f"""\
-# -------------""")
+        # 利き盤について
+        RouteSearchView.print_control(control_board)
 
         # DO 盤上を探索
         is_leached = RouteSearch.search(route_board, control_board, occupied_board, MovementOfKing(board.turn), start_sq, goal_sq)
@@ -764,7 +729,7 @@ ROUTE BOARD RETURN
 ------------------""")
             for rank in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
                 for file in [8, 7, 6, 5, 4, 3, 2, 1, 0]:
-                    sq = SquareHelper.file_rank_to_sq(file, rank)
+                    sq = CshogiHelper.file_rank_to_sq(file, rank)
                     print(f"{route_board[sq]:3} ", end='')
                 print() # 改行
             print(f"""\
@@ -787,8 +752,8 @@ ROUTE BOARD RETURN
         successor_number_of_moves = number_of_moves + 1
 
 
-        # ８方向のどこかに、移動回数が１小さいマスがある
-        for adjacent_sq in movement_of_piece.create_successor_squares(sq):
+        # 駒の利きが届くマスについて
+        for adjacent_sq in movement_of_piece.create_control_squares(sq):
             if self._route_board[adjacent_sq] == successor_number_of_moves:
                 return adjacent_sq
 

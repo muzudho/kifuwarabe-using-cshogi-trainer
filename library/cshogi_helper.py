@@ -5,6 +5,22 @@ class CshogiHelper():
     """cshogi ヘルパー"""
 
 
+    def sq_to_readable(sq):
+        """マス番号を、マス符号に変換します。
+        駒台はナン"""
+
+        # 駒台
+        if sq is None:
+            return None
+        
+        return f"{sq // 9 + 1}{sq % 9 + 1}"
+
+
+    @staticmethod
+    def file_rank_to_sq(file, rank):
+        return file * 9 + rank
+
+
     @staticmethod
     def is_pawn(piece):
         """歩か？"""
