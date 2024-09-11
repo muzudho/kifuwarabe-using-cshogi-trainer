@@ -19,7 +19,7 @@ class MovementOfKnight():
 
         if self._color == cshogi.BLACK:
             # +---+---+---+
-            # + x |   | x |
+            # + 2 |   | 1 |
             # +---+---+---+
             # +   |   |   |
             # +---+---+---+
@@ -30,8 +30,8 @@ class MovementOfKnight():
             #
             # リストの要素に None が含まれることに注意
             items = [
-                SquareHelper.north_north_east_of_sq_from_black(self._color, sq),      # 北北東
-                SquareHelper.north_north_west_of_sq_from_black(self._color, sq),      # 北北西
+                SquareHelper.north_north_east_of_sq_from_black(self._color, sq),      # 1. 北北東
+                SquareHelper.north_north_west_of_sq_from_black(self._color, sq),      # 2. 北北西
             ]
         
         else:
@@ -42,13 +42,13 @@ class MovementOfKnight():
             # +---+---+---+
             # +   |   |   |
             # +---+---+---+
-            # + x |   | x |
+            # + 1 |   | 2 |
             # +---+---+---+
             #
             # リストの要素に None が含まれることに注意
             items = [
-                SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南南西
-                SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南南東
+                SquareHelper.south_south_west_of_sq_from_black(self._color, sq),      # 1. 南南西
+                SquareHelper.south_south_east_of_sq_from_black(self._color, sq),      # 2. 南南東
             ]
 
         # リストの要素から None を除去
