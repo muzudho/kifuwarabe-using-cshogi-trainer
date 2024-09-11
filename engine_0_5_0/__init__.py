@@ -65,9 +65,12 @@ class UsiEngine_0_5_0(UsiEngine):
             best_move_u = None
             is_nearest_route = False
 
+
             # 玉の経路探索開始
             king_route_search = RouteSearch.new_obj(
                     board=self._board,
+                    # 玉の動き
+                    movement_of_piece=MovementOfKing(board.turn),
                     # 開始地点のマス番号
                     start_sq=BoardHelper.get_friend_king_sq(self._board),
                     # 目的地の番号

@@ -581,6 +581,7 @@ class RouteSearch():
     @staticmethod
     def new_obj(
             board,
+            movement_of_piece,
             start_sq,
             goal_sq,
             without_opponet_king_control=False):
@@ -604,6 +605,8 @@ class RouteSearch():
             piece_list = [cshogi.BPAWN, cshogi.BLANCE, cshogi.BKNIGHT, cshogi.BSILVER, cshogi.BGOLD, cshogi.BBISHOP, cshogi.BROOK, cshogi.BKING, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]
         elif board.turn == cshogi.WHITE:
             piece_list = [cshogi.WPAWN, cshogi.WLANCE, cshogi.WKNIGHT, cshogi.WSILVER, cshogi.WGOLD, cshogi.WBISHOP, cshogi.WROOK, cshogi.WKING, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]
+        else:
+            raise ValueError(f"unexpected turn: {board.turn=}")
 
         RouteSearchSub.add_occupied_pieces(
             board,
@@ -629,7 +632,7 @@ class RouteSearch():
         RouteSearchView.print_control(control_board)
 
         # DO 盤上を探索
-        is_leached = RouteSearch.search(route_board, control_board, occupied_board, MovementOfKing(board.turn), start_sq, goal_sq)
+        is_leached = RouteSearch.search(route_board, control_board, occupied_board, movement_of_piece, start_sq, goal_sq)
 
         if is_leached:
             # 経路盤（復路）の表示

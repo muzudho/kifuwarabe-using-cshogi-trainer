@@ -76,7 +76,7 @@ class MovePlan():
         self._friend_next_sq = value
 
 
-    def create_movement(self, color):
+    def create_movement_of_piece(self, color):
         if self._piece_type == 'knight':
             return MovementOfKnight(color)
 
@@ -126,9 +126,13 @@ class UsiEngine_0_2_5_0(UsiEngine):
 
     def case_of_piece(self, move, piece_plan):
         """駒の場合"""
+
+        movement_of_piece = piece_plan.create_movement_of_piece(self._board.turn)
+
         if piece_plan.route_search is None:
             piece_plan.route_search = RouteSearch.new_obj(
                     board=self._board,
+                    movement_of_piece=movement_of_piece,
                     # 開始地点（自駒のある場所）のマス番号
                     start_sq=move.src_sq,
                     # 目的地（敵玉のある場所）のマス番号
@@ -137,7 +141,7 @@ class UsiEngine_0_2_5_0(UsiEngine):
                     without_opponet_king_control=True)
 
         if piece_plan.friend_next_sq is None:
-            piece_plan.friend_next_sq = piece_plan.route_search.next_sq(piece_plan.create_movement(self._board.turn), piece_plan.route_search.start_sq)
+            piece_plan.friend_next_sq = piece_plan.route_search.next_sq(movement_of_piece, piece_plan.route_search.start_sq)
             print(f"[go] {piece_plan.to_piece_kanji()}の経路の次の移動先マス。無ければナン next_masu={CshogiHelper.sq_to_readable(piece_plan.friend_next_sq)}  start_masu={CshogiHelper.sq_to_readable(piece_plan.route_search.start_sq)}")
 
         # 当該駒が敵玉へ近づく最短経路上を進んでいるなら、 d と関係なくこの指し手で更新
