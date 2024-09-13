@@ -290,12 +290,12 @@ class SquareHelper():
         return 0 <= file - 1 and 0 <= rank - 1
 
 
-    @staticmethod
-    def can_it_go_south_south_west_from_black(color, file, rank):
-        """黒番から見て、南南西に行けるか？"""
-        if color == cshogi.BLACK:
-            return file + 1 < FILE_LEN and rank + 2 < RANK_LEN
-        return 0 <= file - 1 and 0 <= rank - 2
+    # @staticmethod
+    # def can_it_go_south_south_west_from_black(color, file, rank):
+    #     """黒番から見て、南南西に行けるか？"""
+    #     if color == cshogi.BLACK:
+    #         return file + 1 < FILE_LEN and rank + 2 < RANK_LEN
+    #     return 0 <= file - 1 and 0 <= rank - 2
 
 
     @staticmethod
@@ -306,12 +306,12 @@ class SquareHelper():
         return 0 <= rank - 1
 
 
-    @staticmethod
-    def can_it_go_south_south_east_from_black(color, file, rank):
-        """黒番から見て、南南東に行けるか？"""
-        if color == cshogi.BLACK:
-            return 0 <= file - 1 and rank + 2 < RANK_LEN
-        return file + 1 < FILE_LEN and 0 <= rank - 2
+    # @staticmethod
+    # def can_it_go_south_south_east_from_black(color, file, rank):
+    #     """黒番から見て、南南東に行けるか？"""
+    #     if color == cshogi.BLACK:
+    #         return 0 <= file - 1 and rank + 2 < RANK_LEN
+    #     return file + 1 < FILE_LEN and 0 <= rank - 2
 
 
     @staticmethod
@@ -329,14 +329,11 @@ class SquareHelper():
         Returns
         -------
         マス番号。該当なしならナン
-        """
+        """        
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_east_from_black(color, file):
-                return sq+EAST
-            return None
-        
         if SquareHelper.can_it_go_east_from_black(color, file):
+            if color == cshogi.BLACK:
+                return sq+EAST
             return sq+WEST
         return None
 
@@ -349,13 +346,10 @@ class SquareHelper():
         -------
         マス番号。該当なしならナン
         """
-        (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_north_east_from_black(color, file=file, rank=rank):
-                return sq+NORTH_EAST
-            return None
-        
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)        
         if SquareHelper.can_it_go_north_east_from_black(color, file=file, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+NORTH_EAST
             return sq+SOUTH_WEST
         return None
 
@@ -369,12 +363,9 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_north_north_east_from_black(color, file=file, rank=rank):
-                return sq+NORTH_NORTH_EAST
-            return None
-
         if SquareHelper.can_it_go_north_north_east_from_black(color, file=file, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+NORTH_NORTH_EAST
             return sq+SOUTH_SOUTH_WEST
         return None
 
@@ -388,12 +379,9 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_north_from_black(color, rank=rank):
-                return sq+NORTH
-            return None
-        
         if SquareHelper.can_it_go_north_from_black(color, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+NORTH
             return sq+SOUTH
         return None
 
@@ -407,12 +395,9 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_north_north_west_from_black(color, file=file, rank=rank):
-                return sq+NORTH_NORTH_WEST
-            return None
-
         if SquareHelper.can_it_go_north_north_west_from_black(color, file=file, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+NORTH_NORTH_WEST
             return sq+SOUTH_SOUTH_EAST
         return None
 
@@ -426,12 +411,9 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_north_west_from_black(color, file=file, rank=rank):
-                return sq+NORTH_WEST
-            return None
-
         if SquareHelper.can_it_go_north_west_from_black(color, file=file, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+NORTH_WEST
             return sq+SOUTH_EAST
         return None
 
@@ -445,12 +427,9 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_west_from_black(color, file=file):
-                return sq+WEST
-            return None
-
         if SquareHelper.can_it_go_west_from_black(color, file=file):
+            if color == cshogi.BLACK:
+                return sq+WEST
             return sq+EAST
         return None
 
@@ -464,33 +443,27 @@ class SquareHelper():
         マス番号。該当なしならナン
         """
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_south_west_from_black(color, file=file, rank=rank):
-                return sq+SOUTH_WEST
-            return None
-
         if SquareHelper.can_it_go_south_west_from_black(color, file=file, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+SOUTH_WEST
             return sq+NORTH_EAST
         return None
 
 
-    @staticmethod
-    def south_south_west_of_sq_from_black(color, sq):
-        """黒番から見て、南南西隣のマス番号を取得
+    # @staticmethod
+    # def south_south_west_of_sq_from_black(color, sq):
+    #     """黒番から見て、南南西隣のマス番号を取得
 
-        Returns
-        -------
-        マス番号。該当なしならナン
-        """
-        (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_south_south_west_from_black(color, file=file, rank=rank):
-                return sq+SOUTH_SOUTH_WEST
-            return None
-
-        if SquareHelper.can_it_go_south_south_west_from_black(color, file=file, rank=rank):
-            return sq+NORTH_NORTH_EAST
-        return None
+    #     Returns
+    #     -------
+    #     マス番号。該当なしならナン
+    #     """
+    #     (file, rank) = SquareHelper.sq_to_file_rank(sq)
+    #     if SquareHelper.can_it_go_south_south_west_from_black(color, file=file, rank=rank):
+    #         if color == cshogi.BLACK:
+    #             return sq+SOUTH_SOUTH_WEST
+    #         return sq+NORTH_NORTH_EAST
+    #     return None
 
 
     @staticmethod
@@ -501,35 +474,28 @@ class SquareHelper():
         -------
         マス番号。該当なしならナン
         """
-        (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            if SquareHelper.can_it_go_south_from_black(color, rank=rank):
-                return sq+SOUTH
-            return None
-        
+        (file, rank) = SquareHelper.sq_to_file_rank(sq)        
         if SquareHelper.can_it_go_south_from_black(color, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+SOUTH
             return sq+NORTH
         return None
 
 
-    @staticmethod
-    def south_south_east_of_sq_from_black(color, sq):
-        """黒番から見て、南南東隣のマス番号を取得
+    # @staticmethod
+    # def south_south_east_of_sq_from_black(color, sq):
+    #     """黒番から見て、南南東隣のマス番号を取得
 
-        Returns
-        -------
-        マス番号。該当なしならナン
-        """
-        (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            (file, rank) = SquareHelper.sq_to_file_rank(sq)
-            if SquareHelper.can_it_go_south_south_east_from_black(color, file=file, rank=rank):
-                return sq+SOUTH_SOUTH_EAST
-            return None
-        
-        if SquareHelper.can_it_go_south_south_east_from_black(color, file=file, rank=rank):
-            return sq+NORTH_NORTH_WEST
-        return None
+    #     Returns
+    #     -------
+    #     マス番号。該当なしならナン
+    #     """        
+    #     (file, rank) = SquareHelper.sq_to_file_rank(sq)
+    #     if SquareHelper.can_it_go_south_south_east_from_black(color, file=file, rank=rank):
+    #         if color == cshogi.BLACK:
+    #             return sq+SOUTH_SOUTH_EAST
+    #         return sq+NORTH_NORTH_WEST
+    #     return None
 
 
     @staticmethod
@@ -539,15 +505,11 @@ class SquareHelper():
         Returns
         -------
         マス番号。該当なしならナン
-        """
+        """       
         (file, rank) = SquareHelper.sq_to_file_rank(sq)
-        if color == cshogi.BLACK:
-            (file, rank) = SquareHelper.sq_to_file_rank(sq)
-            if SquareHelper.can_it_go_south_east_from_black(color, file=file, rank=rank):
-                return sq+SOUTH_EAST
-            return None
-        
         if SquareHelper.can_it_go_south_east_from_black(color, file=file, rank=rank):
+            if color == cshogi.BLACK:
+                return sq+SOUTH_EAST
             return sq+NORTH_WEST
         return None
 

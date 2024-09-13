@@ -17,39 +17,33 @@ class MovementOfKnight():
     def create_control_squares(self, sq):
         """利きの届くマス番号のリスト生成"""
 
-        if self._color == cshogi.BLACK:
-            # +---+---+---+
-            # + 2 |   | 1 |
-            # +---+---+---+
-            # +   |   |   |
-            # +---+---+---+
-            # +   |you|   |
-            # +---+---+---+
-            # +   |   |   |
-            # +---+---+---+
-            #
-            # リストの要素に None が含まれることに注意
-            items = [
-                SquareHelper.north_north_east_of_sq_from_black(self._color, sq),      # 1. 北北東
-                SquareHelper.north_north_west_of_sq_from_black(self._color, sq),      # 2. 北北西
-            ]
-        
-        else:
-            # +---+---+---+
-            # +   |   |   |
-            # +---+---+---+
-            # +   |you|   |
-            # +---+---+---+
-            # +   |   |   |
-            # +---+---+---+
-            # + 1 |   | 2 |
-            # +---+---+---+
-            #
-            # リストの要素に None が含まれることに注意
-            items = [
-                SquareHelper.south_south_west_of_sq_from_black(self._color, sq),      # 1. 南南西
-                SquareHelper.south_south_east_of_sq_from_black(self._color, sq),      # 2. 南南東
-            ]
+        # 先手
+        # +---+---+---+
+        # + 2 |   | 1 |
+        # +---+---+---+
+        # +   |   |   |
+        # +---+---+---+
+        # +   |you|   |
+        # +---+---+---+
+        # +   |   |   |
+        # +---+---+---+
+        #
+        # 後手
+        # +---+---+---+
+        # +   |   |   |
+        # +---+---+---+
+        # +   |you|   |
+        # +---+---+---+
+        # +   |   |   |
+        # +---+---+---+
+        # + 1 |   | 2 |
+        # +---+---+---+
+        #
+        # リストの要素に None が含まれることに注意
+        items = [
+            SquareHelper.north_north_east_of_sq_from_black(self._color, sq),      # 1. 北北東
+            SquareHelper.north_north_west_of_sq_from_black(self._color, sq),      # 2. 北北西
+        ]
 
         # リストの要素から None を除去
         return list(filter(None, items))
@@ -70,42 +64,33 @@ class MovementOfSilver():
     def create_control_squares(self, sq):
         """利きの届くマス番号のリスト生成"""
 
-        if self._color == cshogi.BLACK:
-            # +---+---+---+
-            # + x | x | x |
-            # +---+---+---+
-            # +   |   |   |
-            # +---+---+---+
-            # + x |   | x |
-            # +---+---+---+
-            #
-            # リストの要素に None が含まれることに注意
-            items = [
-                SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
-                SquareHelper.north_of_sq_from_black(self._color, sq),           # 北
-                SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
-                SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
-                SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
-            ]
+        # 先手
+        # +---+---+---+
+        # + x | x | x |
+        # +---+---+---+
+        # +   |   |   |
+        # +---+---+---+
+        # + x |   | x |
+        # +---+---+---+
+        #
+        # 後手
+        # +---+---+---+
+        # + x |   | x |
+        # +---+---+---+
+        # +   |   |   |
+        # +---+---+---+
+        # + x | x | x |
+        # +---+---+---+
+        #
+        # リストの要素に None が含まれることに注意
+        items = [
+            SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
+            SquareHelper.north_of_sq_from_black(self._color, sq),           # 北
+            SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
+            SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
+            SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
+        ]
         
-        else:
-            # +---+---+---+
-            # + x |   | x |
-            # +---+---+---+
-            # +   |   |   |
-            # +---+---+---+
-            # + x | x | x |
-            # +---+---+---+
-            #
-            # リストの要素に None が含まれることに注意
-            items = [
-                SquareHelper.north_east_of_sq_from_black(self._color, sq),      # 北東
-                SquareHelper.north_west_of_sq_from_black(self._color, sq),      # 北西
-                SquareHelper.south_west_of_sq_from_black(self._color, sq),      # 南西
-                SquareHelper.south_of_sq_from_black(self._color, sq),           # 南
-                SquareHelper.south_east_of_sq_from_black(self._color, sq),      # 南東
-            ]
-
         # リストの要素から None を除去
         return list(filter(None, items))
 
