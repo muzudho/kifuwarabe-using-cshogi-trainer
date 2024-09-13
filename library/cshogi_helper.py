@@ -22,6 +22,20 @@ class CshogiHelper():
 
 
     @staticmethod
+    def piece_to_color(piece):
+        # if piece == cshogi.NONE:
+        #     return None
+
+        if piece in [cshogi.BPAWN, cshogi.BLANCE, cshogi.BKNIGHT, cshogi.BSILVER, cshogi.BGOLD, cshogi.BBISHOP, cshogi.BROOK, cshogi.BKING, cshogi.BPROM_PAWN, cshogi.BPROM_LANCE, cshogi.BPROM_KNIGHT, cshogi.BPROM_SILVER, cshogi.BPROM_BISHOP, cshogi.BPROM_ROOK]:
+            return cshogi.BLACK
+
+        if piece in [cshogi.WPAWN, cshogi.WLANCE, cshogi.WKNIGHT, cshogi.WSILVER, cshogi.WGOLD, cshogi.WBISHOP, cshogi.WROOK, cshogi.WKING, cshogi.WPROM_PAWN, cshogi.WPROM_LANCE, cshogi.WPROM_KNIGHT, cshogi.WPROM_SILVER, cshogi.WPROM_BISHOP, cshogi.WPROM_ROOK]:
+            return cshogi.WHITE
+        
+        raise ValueError(f"{piece=}")
+
+
+    @staticmethod
     def is_pawn(piece):
         """歩か？"""
         return piece in [cshogi.BPAWN, cshogi.WPAWN]
